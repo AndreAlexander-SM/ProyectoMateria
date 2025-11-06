@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex:1,
-    marginLeft:40,
+    marginLeft:250,
   },
 
   pastel: {
