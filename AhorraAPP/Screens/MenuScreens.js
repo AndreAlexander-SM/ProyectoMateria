@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View, Button } from 'react-native';
 import React, { useState } from 'react';
 import AutenticacionUsuario from './Autenticacion';
-import GestionDeTransacciones from './GestionDeTransacciones';
+import Gestion from './GestionDeTransacciones';
 import GraficasdeDatos from './Graficas';
 import Presupuestos from './PresupuestosMensuales';
 import LoginScreen from './LoginScreen';
@@ -15,7 +15,7 @@ export default function Menu() {
         case 'Autenticacion':
             return <AutenticacionUsuario/>
         case 'gestion':
-            return <GestionDeTransacciones onBack={() => SetScreen('menu')} />;
+            return <Gestion onBack={() => SetScreen('menu')} />;
         case 'graficas':
             return <GraficasdeDatos/>
         case 'presupuesto':
