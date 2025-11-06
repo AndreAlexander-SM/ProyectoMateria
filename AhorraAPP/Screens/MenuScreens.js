@@ -4,6 +4,8 @@ import AutenticacionUsuario from './Autenticacion';
 import GestionDeTransacciones from './GestionTransacciones';
 import GraficasdeDatos from './Graficas';
 import Presupuestos from './PresupuestosMensuales';
+import LoginScreen from './LoginScreen';
+
 
 export default function Menu() {
     const[screen, SetScreen] = useState('menu');
@@ -17,6 +19,8 @@ export default function Menu() {
             return <GraficasdeDatos/>
         case 'presupuesto':
             return <Presupuestos/>
+       case 'LoginScreen':
+            return <LoginScreen />
         case 'menu':
         default:
             return (
@@ -26,6 +30,7 @@ export default function Menu() {
                     <Button onPress={() => SetScreen('gestion')} title="Gestion de Transacciones" />
                     <Button onPress={() => SetScreen('graficas')} title="Graficas" />
                     <Button onPress={() => SetScreen('presupuesto')} title="Presupuestos Mensuales" />
+                    <Button onPress={() => SetScreen('LoginScreen')} title="Login" />
                 </View>
             )
     }
