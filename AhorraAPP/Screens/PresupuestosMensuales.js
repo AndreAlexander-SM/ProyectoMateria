@@ -2,8 +2,12 @@ import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView } from 'rea
 import React, { useState } from 'react';
 import CrearApartado from './CApartados';
 
+import MenuScreens from './MenuScreens';
+
 export default function Apartados() {
     const [screen, setScreen] = useState('apartados');
+
+
 
     const datos = [
         { nombre: 'Comida', monto: '$200.00' },
@@ -15,36 +19,38 @@ export default function Apartados() {
     switch (screen) {
         case 'crear':
             return <CrearApartado setScreen={setScreen} />;
-
+        case 'eliminar':
+            return <EliminarA setScreen={setScreen} />;
+        case 'menu':
+            return <MenuScreens setScreen={setScreen} />;
         case 'apartados':
         default:
             return (
                 <View style={styles.container}>
 
-                    {/* Encabezado */}
                     <View style={styles.header}>
-                        <TouchableOpacity style={styles.headerBtn}>
-                            {/* ← Aquí va la imagen del botón atrás */}
-                            <Image style={styles.headerIcon} source={{}} />
+                        <TouchableOpacity style={styles.headerBtn} onPress={() => setScreen('menu')}>
+                            <Image style={styles.headerIcon} source={require('../assets/regresar.png')} />
                         </TouchableOpacity>
 
                         <Text style={styles.title}>Apartados</Text>
 
+
                         <TouchableOpacity style={styles.headerBtn}>
-                            {/* ← Aquí va la imagen del perfil */}
-                            <Image style={styles.headerIcon} source={{}} />
+                            <Image style={styles.headerIcon} source={require('../assets/perfil.png')} />
                         </TouchableOpacity>
+
+
                     </View>
+                    <View style={styles.line2} />
 
                     <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
                         {datos.map((item, index) => (
                             <View key={index} style={styles.card}>
 
-                                {/* Icono a la izquierda */}
-                                <View style={styles.iconLeft}>
-                                    {/* ← Aquí va la imagen del ícono de categoría */}
-                                    <Image style={styles.categoryIcon} source={{}} />
-                                </View>
+                                <TouchableOpacity style={styles.iconLeft} onPress={() => setScreen('eliminar')}>
+                                    <Image style={styles.categoryIcon} source={require('../assets/eliminar.png')} />
+                                </TouchableOpacity>
 
                                 <View style={styles.cardInfo}>
                                     <Text style={styles.cardTitle}>{item.nombre}</Text>
@@ -54,14 +60,12 @@ export default function Apartados() {
 
                                 <View style={styles.actions}>
                                     <TouchableOpacity style={styles.actionBtn}>
-                                        {/* ← Ícono de Apartar */}
-                                        <Image style={styles.actionIcon} source={require('../assets/retiro.png')} />
+                                        <Image style={styles.actionIcon} source={require('../assets/retiroD.png')} />
                                         <Text style={styles.actionText}>Apartar</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={styles.actionBtn}>
-                                        {/* ← Ícono de Retirar */}
-                                        <Image style={styles.actionIcon} source={require('../assets/retiro.png')} />
+                                        <Image style={styles.actionIcon} source={require('../assets/ingreso.png')} />
                                         <Text style={styles.actionText}>Retirar</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -79,10 +83,10 @@ export default function Apartados() {
 }
 
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        alignItems: 'center', 
-        backgroundColor: '#fff', 
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        backgroundColor: '#fff',
         paddingTop: 40,
         justifyContent: 'flex-start',
         width: '100%',
@@ -97,24 +101,24 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
 
-    headerBtn: { 
-        padding: 5 
+    headerBtn: {
+        padding: 3
     },
 
-    headerIcon: { 
-        width: 28, 
-        height: 28 
+    headerIcon: {
+        width: 30,
+        height: 30
     },
 
-    title: { 
-        fontSize: 20, 
-        fontWeight: 'bold', 
-        color: '#1B1B1B' 
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1B1B1B'
     },
 
     card: {
         width: '95%',
-        backgroundColor: '#bcd3e0',
+        backgroundColor: '#E6F0F6',
         borderRadius: 20,
         padding: 15,
         flexDirection: 'row',
@@ -123,39 +127,48 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
 
-    iconLeft: { 
-        marginRight: 10 
+    iconLeft: {
+        marginRight: 10,
+        padding: 3
     },
 
-    categoryIcon: { 
-        width: 35, 
-        height: 35 
+    categoryIcon: {
+        width: 35,
+        height: 35
     },
 
-    cardInfo: { 
-        flex: 1 
+    cardInfo: {
+        flex: 1
     },
 
-    cardTitle: { 
-        fontSize: 17, 
-        fontWeight: '600' 
+    cardTitle: {
+        fontSize: 17,
+        fontWeight: '600'
     },
 
-    cardAmount: { 
-        fontSize: 18, 
-        fontWeight: '700', 
-        marginTop: 4 
+    cardAmount: {
+        fontSize: 18,
+        fontWeight: '700',
+        marginTop: 4
     },
 
     line: {
-        borderBottomWidth: 1, 
-        borderColor: '#fff', 
-        marginTop: 5, 
-        width: '90%' },
+        borderBottomWidth: 3,
+        borderColor: '#fff',
+        marginTop: 5,
+        width: '90%'
+    },
 
-    actions: { 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+    line2: {
+        borderBottomWidth: 2,
+        borderColor: '#31356E',
+        width: '100%',
+        marginBottom: 20
+    },
+
+    actions: {
+        justifyContent: 'space-between',
+        alignItems: 'center',
         flexDirection: 'row',
     },
 
@@ -165,29 +178,29 @@ const styles = StyleSheet.create({
         marginHorizontal: 6,
     },
 
-    actionIcon: { 
-        width: 35, 
-        height: 35, 
-        marginRight: 6 
+    actionIcon: {
+        width: 35,
+        height: 35,
+        marginRight: 6
     },
 
-    actionText: { 
+    actionText: {
         fontSize: 13,
         fontWeight: '500',
-        color: '#fff'
+
     },
 
     addBtn: {
         width: 60,
         height: 60,
-        backgroundColor: '#bcd3e0',
+        backgroundColor: '#31356E',
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
     },
-    addIcon: { 
-        width: 40, 
-        height: 40 
+    addIcon: {
+        width: 40,
+        height: 40
     }
 });
