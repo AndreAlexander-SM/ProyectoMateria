@@ -5,6 +5,7 @@ import Gestion from './GestionDeTransacciones';
 import GraficasdeDatos from './Graficas';
 import Presupuestos from './PresupuestosMensuales';
 import LoginScreen from './LoginScreen';
+import InicioSesion from './InicioSesion';
 
 
 export default function Menu() {
@@ -21,6 +22,8 @@ export default function Menu() {
             return <Presupuestos/>
        case 'LoginScreen':
             return <LoginScreen />
+        case 'InicioSesion':
+            return <InicioSesion/>
         case 'menu':
         default:
             return (
@@ -31,6 +34,7 @@ export default function Menu() {
                     <Button onPress={() => SetScreen('graficas')} title="Graficas" />
                     <Button onPress={() => SetScreen('presupuesto')} title="Presupuestos Mensuales" />
                     <Button onPress={() => SetScreen('LoginScreen')} title="Login" />
+                    <Button onPress={() => SetScreen('InicioSesion')} title="Inicio de Sesión" />
                 </View>
             )
     }
