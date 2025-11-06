@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View, Button } from 'react-native';
 import React, { useState } from 'react';
 import AutenticacionUsuario from './Autenticacion';
-import GestionDeTransacciones from './GestionTransacciones';
+import GestionDeTransacciones from './GestionDeTransacciones';
 import GraficasdeDatos from './Graficas';
 import Presupuestos from './PresupuestosMensuales';
 import LoginScreen from './LoginScreen';
@@ -9,13 +9,13 @@ import InicioSesion from './InicioSesion';
 
 
 export default function Menu() {
-    const[screen, SetScreen] = useState('menu');
+    const[screen, SetScreen] = useState('menu');    
 
     switch (screen) {
         case 'Autenticacion':
             return <AutenticacionUsuario/>
         case 'gestion':
-            return <GestionDeTransacciones/>
+            return <GestionDeTransacciones onBack={() => SetScreen('menu')} />;
         case 'graficas':
             return <GraficasdeDatos/>
         case 'presupuesto':
