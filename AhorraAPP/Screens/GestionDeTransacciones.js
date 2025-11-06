@@ -4,7 +4,7 @@ import Agregar from "./Agregar";
 import Editar from "./Editar";
 import Eliminar from "./Eliminar";
 
-export default function GestionDeTransacciones({ onBack }) {
+export default function Gestion({ onBack }) {
   const [pantalla, setPantalla] = useState("transacciones");
 
   switch (pantalla) {
