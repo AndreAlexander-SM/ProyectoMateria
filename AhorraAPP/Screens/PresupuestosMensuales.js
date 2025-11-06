@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import CrearApartado from './CApartados';
-
+import EliminarA from './EliminarA';
 import MenuScreens from './MenuScreens';
 
 export default function Apartados() {

@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Apartados from "./PresupuestosMensuales";
 import React, { useState } from 'react';
 
-export default function EliminarApartado() {
+export default function ConfirmarApartado() {
     const [screen, setScreen] = useState('apartado');
     switch (screen) {
         case 'apartados':
@@ -12,8 +12,8 @@ export default function EliminarApartado() {
             return (
                 <View style={styles.container}>
                     <View style={styles.card}>
-                        <Text style={styles.titulo}>Eliminar Apartado</Text>
-                        <Text style={styles.texto}>Se eliminara su apartado, el dinero se vera reflejado en su cuenta principal.</Text>
+                        <Text style={styles.titulo}>Confirmar Apartado</Text>
+                        <Text style={styles.texto}>¿Quiere continuar con la confirmación de este Apartado Mensual?.</Text>
 
                         <View style={styles.row}>
                             <TouchableOpacity style={[styles.boton, styles.cancel]} onPress={() => setScreen('apartados')}>
