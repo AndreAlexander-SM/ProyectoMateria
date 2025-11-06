@@ -8,7 +8,7 @@ import LoginScreen from './LoginScreen';
 
 
 export default function Menu() {
-    const[screen, SetScreen] = useState('menu');
+    const[screen, SetScreen] = useState('menu');    
 
     switch (screen) {
         case 'Autenticacion':
