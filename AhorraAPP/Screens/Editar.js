@@ -1,15 +1,18 @@
 import React from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 
-export default function Agregar({ onNext }) {
+import React from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+
+export default function Editar({ onNext }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Agregar Transacción</Text>
-      <TextInput placeholder="Monto" style={styles.input} />
-      <TextInput placeholder="Categoría" style={styles.input} />
+      <Text style={styles.titulo}>Editar Transacción</Text>
+      <TextInput placeholder="Monto Nuevo" style={styles.input} />
+      <TextInput placeholder="Categoría Nueva" style={styles.input} />
 
       <TouchableOpacity style={styles.boton} onPress={onNext}>
-        <Text style={styles.textoBoton}>Editar</Text>
+        <Text style={styles.textoBoton}>Eliminar</Text>
       </TouchableOpacity>
     </View>
   );
