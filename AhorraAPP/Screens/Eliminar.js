@@ -6,7 +6,7 @@ export default function Eliminar({ onBack }) {
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.titulo}>Eliminar Transacción</Text>
-        <Text style={styles.texto}>¿Deseas eliminar esta transacción?</Text>
+        <Text style={styles.texto}>¿Seguro que deseas eliminar esta transacción?</Text>
 
         <View style={styles.row}>
           <TouchableOpacity style={[styles.boton, styles.cancel]}>
@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: 20,
+    marginBottom: 25,
   },
   boton: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
   },
@@ -80,11 +80,21 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   menu: {
-    backgroundColor: "#3b3b98",
+    backgroundColor: "#330ce2ff", 
     width: "100%",
+    marginTop: 15,
+    paddingVertical: 15,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5, 
   },
   textoBoton: {
     color: "white",
-    fontWeight: "600",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
