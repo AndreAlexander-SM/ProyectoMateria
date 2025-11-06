@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View, Button } from 'react-native';
+import { Text, StyleSheet, View, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 
 import AutenticacionUsuario from './Autenticacion';
@@ -34,37 +34,37 @@ export default function Menu() {
     default:
       return (
         <View style={styles.container}>
-          <Text style={styles.title}>Menu Principal</Text>
+          <Text style={styles.title}>Menú Principal</Text>
 
-          <Button 
-            onPress={() => SetScreen('Autenticacion')} 
-            title="Autenticacion de Usuario" 
-          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('gestion')}>
+            <Text style={styles.buttonText}>GESTIÓN DE TRANSACCIONES</Text>
+          </TouchableOpacity>
 
-          <Button 
-            onPress={() => SetScreen('gestion')} 
-            title="Gestion de Transacciones" 
-          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('graficas')}>
+            <Text style={styles.buttonText}>GRÁFICOS</Text>
+          </TouchableOpacity>
 
-          <Button 
-            onPress={() => SetScreen('graficas')} 
-            title="Graficas" 
-          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('presupuesto')}>
+            <Text style={styles.buttonText}>PRESUPUESTOS MENSUALES</Text>
+          </TouchableOpacity>
 
-          <Button 
-            onPress={() => SetScreen('presupuesto')} 
-            title="Presupuestos Mensuales" 
-          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('LoginScreen')}>
+            <Text style={styles.buttonText}>ACCESO</Text>
+          </TouchableOpacity>
 
-          <Button 
-            onPress={() => SetScreen('LoginScreen')} 
-            title="Login" 
-          />
-
-          <Button 
-            onPress={() => SetScreen('InicioSesion')} 
-            title="Inicio de Sesión" 
-          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('InicioSesion')}>
+            <Text style={styles.buttonText}>INICIO DE SESIÓN</Text>
+          </TouchableOpacity>
         </View>
       );
   }
@@ -75,32 +75,39 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center', 
-    backgroundColor: '#cceeff', 
+    backgroundColor: '#cceeff', // fondo celeste
     padding: 30 
   },
+
   title: { 
     fontSize: 28, 
     fontWeight: 'bold', 
-    color: '#2e2e2e', 
-    marginBottom: 40 
+    color: '#222', 
+    marginBottom: 30, 
+    textAlign: 'center'
   },
+
   button: { 
-    backgroundColor: '#6a5acd', 
+    backgroundColor: '#2196f3', 
     paddingVertical: 14, 
-    paddingHorizontal: 30, 
-    borderRadius: 12, 
-    marginVertical: 15, 
+    paddingHorizontal: 25, 
+    borderRadius: 6, 
+    marginVertical: 8, 
     width: '80%', 
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
+    shadowRadius: 3,
+    elevation: 4
   },
+
   buttonText: { 
     color: '#fff', 
-    fontSize: 16, 
-    fontWeight: '600' 
+    fontSize: 15, 
+    fontWeight: 'bold',
+    textAlign: 'center',
+    letterSpacing: 0.5
   },
 });
