@@ -8,6 +8,7 @@ import Presupuestos from './PresupuestosMensuales';
 import LoginScreen from './LoginScreen';
 import InicioSesion from './InicioSesion';
 import Registro from './Registro';
+import RecuperarContraseña from './RecuperarContraseña';
 
 export default function Menu() {
   const [screen, SetScreen] = useState('menu');
@@ -32,6 +33,8 @@ export default function Menu() {
       return <InicioSesion />;
     case 'Registro':
       return <Registro />
+    case 'RecuperarContraseña':
+      return <RecuperarContraseña />;
 
     case 'menu':
     default:
@@ -73,6 +76,12 @@ export default function Menu() {
             style={styles.button}
             onPress={() => SetScreen('Registro')}>
             <Text style={styles.buttonText}>Registro</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('RecuperarContraseña')}>
+            <Text style={styles.buttonText}>RecuperarContraseña</Text>
           </TouchableOpacity>
         </View>
 

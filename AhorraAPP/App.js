@@ -7,6 +7,6 @@ import InicioSesion from './Screens/InicioSesion'
 
 export default function App() {
   return (
-    <InicioSesion/>
+    <Menu/>
   );
 }
