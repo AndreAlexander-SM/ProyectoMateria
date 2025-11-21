@@ -1,7 +1,13 @@
 import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
+import CrearApartado from './CApartados';
+import EliminarA from './EliminarA';
+import MenuScreens from './MenuScreens';
 
-export default function Apartados({ navigation }) {
+export default function Apartados() {
+    const [screen, setScreen] = useState('apartados');
+
+
 
     const datos = [
         { nombre: 'Comida', monto: '$200.00' },
@@ -10,62 +16,71 @@ export default function Apartados({ navigation }) {
         { nombre: 'Vacaciones', monto: '$200.00' }
     ];
 
-    return (
-        <View style={styles.container}>
+    switch (screen) {
+        case 'crear':
+            return <CrearApartado setScreen={setScreen} />;
+        case 'eliminar':
+            return <EliminarA setScreen={setScreen} />;
+        case 'menu':
+            return <MenuScreens setScreen={setScreen} />;
+        case 'apartados':
+        default:
+            return (
+                <View style={styles.container}>
 
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.navigate('MenuScreens')}>
-                    <Image style={styles.headerIcon} source={require('../assets/regresar.png')} />
-                </TouchableOpacity>
-
-                <Text style={styles.title}>Apartados</Text>
-
-                <TouchableOpacity style={styles.headerBtn}>
-                    <Image style={styles.headerIcon} source={require('../assets/perfil.png')} />
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.line2} />
-
-            {/* Lista */}
-            <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
-                {datos.map((item, index) => (
-                    <View key={index} style={styles.card}>
-                        <TouchableOpacity style={styles.iconLeft} onPress={() => navigation.navigate('EliminarA')}>
-                            <Image style={styles.categoryIcon} source={require('../assets/eliminar.png')} />
+                    <View style={styles.header}>
+                        <TouchableOpacity style={styles.headerBtn} onPress={() => setScreen('menu')}>
+                            <Image style={styles.headerIcon} source={require('../assets/regresar.png')} />
                         </TouchableOpacity>
 
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>{item.nombre}</Text>
-                            <Text style={styles.cardAmount}>{item.monto}</Text>
-                            <View style={styles.line} />
-                        </View>
+                        <Text style={styles.title}>Apartados</Text>
 
-                        <View style={styles.actions}>
-                            <TouchableOpacity style={styles.actionBtn}>
-                                <Image style={styles.actionIcon} source={require('../assets/retiroD.png')} />
-                                <Text style={styles.actionText}>Apartar</Text>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.actionBtn}>
-                                <Image style={styles.actionIcon} source={require('../assets/ingreso.png')} />
-                                <Text style={styles.actionText}>Retirar</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity style={styles.headerBtn}>
+                            <Image style={styles.headerIcon} source={require('../assets/perfil.png')} />
+                        </TouchableOpacity>
+
+
                     </View>
-                ))}
-            </ScrollView>
+                    <View style={styles.line2} />
 
-            {/* Botón agregar */}
-            <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('CrearApartado')}>
-                <Image style={styles.addIcon} source={require('../assets/mas.png')} />
-            </TouchableOpacity>
+                    <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%' }}>
+                        {datos.map((item, index) => (
+                            <View key={index} style={styles.card}>
 
-        </View>
-    );
+                                <TouchableOpacity style={styles.iconLeft} onPress={() => setScreen('eliminar')}>
+                                    <Image style={styles.categoryIcon} source={require('../assets/eliminar.png')} />
+                                </TouchableOpacity>
+
+                                <View style={styles.cardInfo}>
+                                    <Text style={styles.cardTitle}>{item.nombre}</Text>
+                                    <Text style={styles.cardAmount}>{item.monto}</Text>
+                                    <View style={styles.line} />
+                                </View>
+
+                                <View style={styles.actions}>
+                                    <TouchableOpacity style={styles.actionBtn}>
+                                        <Image style={styles.actionIcon} source={require('../assets/retiroD.png')} />
+                                        <Text style={styles.actionText}>Apartar</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.actionBtn}>
+                                        <Image style={styles.actionIcon} source={require('../assets/ingreso.png')} />
+                                        <Text style={styles.actionText}>Retirar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))}
+                    </ScrollView>
+
+                    <TouchableOpacity style={styles.addBtn} onPress={() => setScreen('crear')}>
+                        <Image style={styles.addIcon} source={require('../assets/mas.png')} />
+                    </TouchableOpacity>
+
+                </View>
+            );
+    }
 }
-
 
 const styles = StyleSheet.create({
     container: {
@@ -172,6 +187,7 @@ const styles = StyleSheet.create({
     actionText: {
         fontSize: 13,
         fontWeight: '500',
+
     },
 
     addBtn: {
@@ -183,7 +199,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
     },
-
     addIcon: {
         width: 40,
         height: 40
