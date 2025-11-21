@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function Transacciones({ onNext, onBack }) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       <Text style={styles.titulo}>Transacciones</Text>
       <TextInput placeholder="Búsqueda" style={styles.input} />
 
