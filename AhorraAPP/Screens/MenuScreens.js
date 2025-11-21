@@ -7,6 +7,7 @@ import GraficasdeDatos from './Graficas';
 import Presupuestos from './PresupuestosMensuales';
 import LoginScreen from './LoginScreen';
 import InicioSesion from './InicioSesion';
+import Registro from './Registro';
 
 export default function Menu() {
   const [screen, SetScreen] = useState('menu');
@@ -29,6 +30,8 @@ export default function Menu() {
 
     case 'InicioSesion':
       return <InicioSesion />;
+    case 'Registro':
+      return <Registro />
 
     case 'menu':
     default:
@@ -65,7 +68,16 @@ export default function Menu() {
             onPress={() => SetScreen('InicioSesion')}>
             <Text style={styles.buttonText}>INICIO DE SESIÓN</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => SetScreen('Registro')}>
+            <Text style={styles.buttonText}>Registro</Text>
+          </TouchableOpacity>
         </View>
+
+      
+
       );
   }
 }

@@ -62,9 +62,12 @@ export default function InicioSesion() {
           <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+      <TouchableOpacity>
           <Text style={styles.recoverText}>Recuperar contraseña</Text>
         </TouchableOpacity>
+
+
+
       </View>
     </View>
   );
@@ -111,15 +114,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   label: {
-    color: '#FFFFFF',
+    color: '#fcf5f5ff',
     alignSelf: 'flex-start',
     fontSize: 12,
     marginBottom: 5,
   },
   input: {
-    borderBottomColor: '#FFFFFF',
+    borderBottomColor: '#ffffffff',
     borderBottomWidth: 1,
-    color: '#FFFFFF',
+    color: '#e7e6e6ff',
     width: '100%',
     marginBottom: 20,
     paddingVertical: 5,

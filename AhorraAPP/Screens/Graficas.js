@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex:1,
-    marginLeft:250,
+    marginLeft:50,
   },
 
   pastel: {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-      marginLeft: 40,
+      marginLeft: -150,
   },
 
   barras: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   botonMes: {
     position: 'absolute',
     top: 5,
-    right: 5,
+    right: -55,
     backgroundColor: '#a3abb3ff',
     paddingVertical: 5,
     paddingHorizontal: 10,
