@@ -32,9 +32,7 @@ export default function InicioSesion() {
 
       <View style={styles.loginBox}>
         <View style={styles.toggleButtons}>
-          <TouchableOpacity style={[styles.smallButton, styles.activeButton]}>
-            <Text style={styles.smallButtonText}>INICIAR SESIÓN</Text>
-          </TouchableOpacity>
+
           <TouchableOpacity style={styles.smallButton}>
             <Text style={styles.smallButtonText}>REGÍSTRATE</Text>
           </TouchableOpacity>
