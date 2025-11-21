@@ -1,6 +1,7 @@
 import { Text, StyleSheet, View, TextInput, Alert, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 
+//Recuperar contraseña mi commit
 export default function RecuperarContraseña({ onBack }) {
   const [email, setEmail] = useState('');
 
