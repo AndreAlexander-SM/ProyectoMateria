@@ -1,26 +1,47 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 
 export default function Eliminar({ onBack }) {
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.titulo}>Eliminar Transacción</Text>
-        <Text style={styles.texto}>¿Seguro que deseas eliminar esta transacción?</Text>
-
-        <View style={styles.row}>
-          <TouchableOpacity style={[styles.boton, styles.cancel]}>
-            <Text style={[styles.textoBoton, { color: "#333" }]}>Cancelar</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.boton, styles.delete]}>
-            <Text style={styles.textoBoton}>Aceptar</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={[styles.boton, styles.menu]} onPress={onBack}>
-          <Text style={styles.textoBoton}>Volver al menú</Text>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerBtn} onPress={onBack}>
+          <Image
+            style={styles.headerIcon}
+            source={require("../assets/regresar.png")}
+          />
         </TouchableOpacity>
+
+        <Text style={styles.title}>Eliminar Transacción</Text>
+
+        <View style={{ width: 30 }} />
+      </View>
+
+      <View style={styles.line2} />
+
+      <View style={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.tituloCard}>
+            ¿Seguro que deseas eliminar esta transacción?
+          </Text>
+
+          <Text style={styles.texto}>Esta acción es irreversible.</Text>
+
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={[styles.boton, styles.cancel]}
+              onPress={onBack}
+            >
+              <Text style={styles.textoBoton}>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.boton, styles.delete]}>
+              <Text style={[styles.textoBoton, { color: "white" }]}>
+                Aceptar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -29,72 +50,98 @@ export default function Eliminar({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f2f2f2",
+    paddingTop: 50,
+  },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginBottom: 10,
+  },
+
+  headerBtn: {
+    padding: 3,
+  },
+
+  headerIcon: {
+    width: 30,
+    height: 30,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1B1B1B",
+  },
+
+  line2: {
+    borderBottomWidth: 2,
+    borderColor: "#31356E",
+    width: "100%",
+    marginBottom: 20,
+  },
+
+  content: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f2f2f2",
-    padding: 20,
+    paddingHorizontal: 20,
   },
+
   card: {
-    width: "90%",
+    width: "100%",
     backgroundColor: "white",
     borderRadius: 15,
     padding: 25,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
     alignItems: "center",
+    elevation: 4,
   },
-  titulo: {
+
+  tituloCard: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 15,
     color: "#333",
     textAlign: "center",
   },
+
   texto: {
     marginBottom: 25,
     textAlign: "center",
     fontSize: 16,
     color: "#555",
   },
+
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     marginBottom: 25,
   },
+
   boton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
   },
+
   cancel: {
     backgroundColor: "#e0e0e0",
     marginRight: 10,
   },
+
   delete: {
     backgroundColor: "#d63031",
     marginLeft: 10,
   },
-  menu: {
-    backgroundColor: "#330ce2ff", 
-    width: "100%",
-    marginTop: 15,
-    paddingVertical: 15,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5, 
-  },
+
   textoBoton: {
-    color: "white",
+    color: "#333",
     fontWeight: "bold",
     fontSize: 16,
-    textAlign: "center",
   },
 });

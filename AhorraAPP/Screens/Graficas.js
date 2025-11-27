@@ -1,28 +1,25 @@
-import { Text, StyleSheet, View, TouchableOpacity, SafeAreaView, Image } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons';
+import React from 'react';
+import { Text, StyleSheet, View, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 
-export default function Graficas() {
+export default function Graficas({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
-
-     
-   <View style={styles.row}>
-        <TouchableOpacity>
-          <FontAwesome name="arrow-left" size={30} color="rgba(27, 60, 177, 1)" />
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.navigate('Inicio')}>
+          <Image style={styles.headerIcon} source={require('../assets/regresar.png')} />
         </TouchableOpacity>
 
-        <Text style={styles.encabezado}>Gráficas</Text>
+        <Text style={styles.title}>Gráficas</Text>
 
-        <TouchableOpacity>
-          <FontAwesome name="question-circle" size={30} color="#333" />
+        <TouchableOpacity style={styles.headerBtn}>
+          <Image style={styles.headerIcon} source={require('../assets/perfil.png')} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.linea} />
+      <View style={styles.line2} />
 
       <Text style={styles.texto}>Hola, usuario...</Text>
 
-   
       <View style={styles.row1}>
         <View style={styles.imagenPastel}>
           <Image
@@ -32,7 +29,7 @@ export default function Graficas() {
           />
         </View>
 
-       <View style={styles.categorias}>
+        <View style={styles.categorias}>
           <View style={styles.itemCategoria}>
             <View style={[styles.colorBox, { backgroundColor: '#71e3ebff' }]} />
             <Text style={styles.nombreCategoria}>Compras</Text>
@@ -42,7 +39,7 @@ export default function Graficas() {
             <View style={[styles.colorBox, { backgroundColor: '#4698c1ff' }]} />
             <Text style={styles.nombreCategoria}>Comida</Text>
           </View>
-          
+
           <View style={styles.itemCategoria}>
             <View style={[styles.colorBox, { backgroundColor: 'rgba(73, 116, 185, 0.98)' }]} />
             <Text style={styles.nombreCategoria}>Servicios</Text>
@@ -57,11 +54,9 @@ export default function Graficas() {
             <View style={[styles.colorBox, { backgroundColor: '#3a4a81ff' }]} />
             <Text style={styles.nombreCategoria}>Otros</Text>
           </View>
-
         </View>
       </View>
 
-   
       <View style={styles.row2}>
         <View style={styles.imagenBarras}>
           <Image
@@ -69,14 +64,13 @@ export default function Graficas() {
             style={styles.barras}
             resizeMode="contain"
           />
-         
+
           <TouchableOpacity style={styles.botonMes}>
             <Text style={styles.textoBoton}>Mes</Text>
           </TouchableOpacity>
         </View>
       </View>
 
- 
       <View style={styles.listaInfo}>
         <View style={styles.itemColor}>
           <View style={[styles.colorBox, { backgroundColor: '#495cb1ff' }]} />
@@ -110,28 +104,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-start',
-    paddingTop: 10,
+    paddingTop: 40,
+    backgroundColor: '#fff',
   },
 
-  row: {
-    flexDirection: 'row',
-    paddingHorizontal: 15,
-    alignItems: 'center',
+  header: {
     width: '100%',
+    paddingHorizontal: 20,
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    position: 'relative',
-    marginTop: 15,
+    alignItems: 'center',
+    marginBottom: 15,
   },
 
-  encabezado: {
-    fontSize: 30,
-    color: '#151313ff',
+  headerBtn: {
+    padding: 3,
+  },
+
+  headerIcon: {
+    width: 30,
+    height: 30,
+  },
+
+  title: {
+    fontSize: 20,
     fontWeight: 'bold',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    textAlign: 'center',
-    marginTop: 8,
+    color: '#1B1B1B',
+  },
+
+  line2: {
+    borderBottomWidth: 2,
+    borderColor: '#31356E',
+    width: '100%',
+    marginBottom: 20,
   },
 
   linea: {
@@ -159,8 +164,8 @@ const styles = StyleSheet.create({
   imagenPastel: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex:1,
-    marginLeft:50,
+    flex: 1,
+    marginLeft: 50,
   },
 
   pastel: {
@@ -171,7 +176,6 @@ const styles = StyleSheet.create({
   categorias: {
     marginLeft: 40,
     justifyContent: 'center',
-      marginLeft: 40,
   },
 
   itemCategoria: {
@@ -203,7 +207,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-      marginLeft: -150,
+    marginLeft: -150,
   },
 
   barras: {

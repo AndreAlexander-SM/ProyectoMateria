@@ -4,18 +4,33 @@ import Agregar from "./Agregar";
 import Editar from "./Editar";
 import Eliminar from "./Eliminar";
 
-export default function Gestion({ onBack }) {
+export default function GestionDeTransacciones({ navigation }) {
   const [pantalla, setPantalla] = useState("transacciones");
 
   switch (pantalla) {
     case "transacciones":
-      return <Transacciones onNext={() => setPantalla("agregar")} onBack={onBack} />;
+      return (
+        <Transacciones
+          onNext={() => setPantalla("agregar")}
+          onEdit={() => setPantalla("editar")}
+          navigation={navigation}
+        />
+      );
+
     case "agregar":
-      return <Agregar onNext={() => setPantalla("editar")} />;
+      return <Agregar onBack={() => setPantalla("transacciones")} />;
+
     case "editar":
-      return <Editar onNext={() => setPantalla("eliminar")} />;
+      return (
+        <Editar
+          onNext={() => setPantalla("eliminar")}
+          onBack={() => setPantalla("transacciones")}
+        />
+      );
+
     case "eliminar":
-      return <Eliminar onBack={onBack} />;
+      return <Eliminar onBack={() => setPantalla("transacciones")} />;
+
     default:
       return null;
   }
