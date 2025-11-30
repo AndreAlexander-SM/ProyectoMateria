@@ -5,6 +5,7 @@ import Editar from "./Editar";
 import Eliminar from "./Eliminar";
 
 export default function GestionDeTransacciones({ navigation }) {
+  
   const [pantalla, setPantalla] = useState("transacciones");
 
   switch (pantalla) {
