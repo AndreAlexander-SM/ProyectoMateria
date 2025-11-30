@@ -42,7 +42,7 @@ export default function Menu({ navigation }) {
         <TouchableOpacity style={styles.monthContainer}>
           <Text style={styles.Text}>Ahorra+ APP</Text>
         </TouchableOpacity>
-        {/* Espacio vacío para balancear el header */}
+        {}
         <View style={{ width: 24 }} /> 
       </View>
 
@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    borderRadius: 20,
   },
 
   // --- Estilos del Header ---
@@ -182,6 +183,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 20,
     paddingHorizontal: 20,
+    borderRadius: 20,
   },
   subTabActiveCenteredText: {
     fontSize: 16,

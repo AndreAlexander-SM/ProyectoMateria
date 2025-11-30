@@ -4,7 +4,7 @@ import {
   StyleSheet,
   View,
   TextInput,
-  Alert,
+  Alert, // Asegúrate de tener esto importado
   TouchableOpacity,
   Switch,
 } from "react-native";
@@ -15,10 +15,21 @@ export default function Registro({ navigation }) {
   const [contraseña, setContraseña] = useState("");
   const [telefono, setTelefono] = useState("");
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
-  const [recibirNoticias, setRecibirNoticias] = useState(false);
-
-  const mostrarAlerta = () => {
-    Alert.alert("Éxito", "Registro exitoso");
+  
+  // Función para manejar el registro
+  const handleRegistro = () => {
+    // Aquí podrías agregar validaciones (ej. si los campos están vacíos)
+    
+    Alert.alert(
+      "Éxito",
+      "Registro exitoso",
+      [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("InicioSesion"), // Navega solo después de dar OK
+        },
+      ]
+    );
   };
 
   return (
@@ -27,16 +38,7 @@ export default function Registro({ navigation }) {
 
       <View style={styles.loginBox}>
         <View style={styles.toggleButtons}>
-          <TouchableOpacity
-            style={styles.smallButton}
-            onPress={() => navigation.navigate("InicioSesion")}
-          >
-            <Text style={styles.smallButtonText}>INICIAR SESIÓN</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.smallButton, styles.activeButton]}>
-            <Text style={styles.smallButtonText}>REGÍSTRATE</Text>
-          </TouchableOpacity>
+          
         </View>
 
         <Text style={styles.welcomeText}>BIENVENIDO A AHORRA+</Text>
@@ -92,7 +94,7 @@ export default function Registro({ navigation }) {
 
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={mostrarAlerta}
+          onPress={handleRegistro} 
         >
           <Text style={styles.loginButtonText}>REGISTRARTE</Text>
         </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
     Text, StyleSheet, View, TouchableOpacity, SafeAreaView, Image, 
-    ScrollView 
+    ScrollView, StatusBar, Platform 
 } from 'react-native';
 
 export default function Graficas({ navigation }) {
@@ -150,21 +150,22 @@ export default function Graficas({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#46607C" />
+            
+            {/* Header Modificado Estilo Imagen */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.navigate('Inicio')}>
-                    <Image style={styles.headerIcon} source={require('../assets/regresar.png')} />
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Inicio')}>
+                    <Image style={styles.backIcon} source={require('../assets/regresar.png')} />
                 </TouchableOpacity>
 
-                <Text style={styles.title}>Gráficas Financieras</Text>
-
-                <TouchableOpacity style={styles.headerBtn}>
-                    <Image style={styles.headerIcon} source={require('../assets/perfil.png')} />
-                </TouchableOpacity>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.titleText}>Gráficas</Text>
+                    <Text style={styles.titleText}>Financieras</Text>
+                </View>
             </View>
 
-            <View style={styles.line2} />
+            {/* Se eliminó la linea2 y el botón de perfil para coincidir con la imagen */}
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* Selector de Tipo de Gráfica */}
@@ -257,7 +258,7 @@ export default function Graficas({ navigation }) {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -269,33 +270,43 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
     },
+    // --- ESTILOS DEL HEADER MODIFICADOS ---
     header: {
         width: '100%',
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        backgroundColor: '#46607C', // Color azul grisáceo de la imagen
+        height: 157, // Altura mayor para el bloque
+        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 15,
-        paddingTop: 40,
+        paddingTop: Platform.OS === 'android' ? 20 : 0, // Ajuste para barra de estado
+        marginBottom: 20,
+        position: 'relative',
     },
-    headerBtn: {
-        padding: 3,
+    backButton: {
+        position: 'absolute',
+        left: 20,
+        top: 55, // Ajustado para centrarse verticalmente con el título visualmente
+        padding: 5,
+        zIndex: 10,
     },
-    headerIcon: {
+    backIcon: {
         width: 30,
         height: 30,
+        tintColor: '#fff', // Icono blanco
     },
-    title: {
-        fontSize: 20,
+    titleContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    titleText: {
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#1B1B1B',
+        color: '#fff', // Texto blanco
+        textAlign: 'center',
+        lineHeight: 28,
     },
-    line2: {
-        borderBottomWidth: 2,
-        borderColor: '#31356E',
-        width: '100%',
-        marginBottom: 20,
-    },
+    // --------------------------------------
+    
     selectorGraficas: {
         flexDirection: 'row',
         justifyContent: 'center',
