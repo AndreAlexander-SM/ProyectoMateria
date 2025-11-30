@@ -7,7 +7,7 @@ import {
 export default function Graficas({ navigation }) {
     const [graficaActiva, setGraficaActiva] = useState('pastel'); // 'pastel' o 'barras'
 
-    // Datos de ejemplo estáticos
+  
     const datosEjemplo = {
         totalGastos: 4850,
         totalIngresos: 9500,
@@ -21,7 +21,6 @@ export default function Graficas({ navigation }) {
         }
     };
 
-    // Colores para las categorías
     const coloresCategorias = {
         'Compras': '#71e3ebff',
         'Comida': '#4698c1ff',
@@ -41,7 +40,7 @@ export default function Graficas({ navigation }) {
         }
     };
 
-    // Calcular porcentajes para el gráfico de pastel
+  
     const calcularPorcentajes = () => {
         const total = datosEjemplo.totalGastos;
         if (total === 0) return null;
@@ -53,7 +52,6 @@ export default function Graficas({ navigation }) {
         }));
     };
 
-    // Renderizar gráfico de pastel
     const renderGraficaPastel = () => {
         const porcentajes = calcularPorcentajes();
 
@@ -90,11 +88,11 @@ export default function Graficas({ navigation }) {
                         ))}
                     </View>
                 </View>
-            </View>
+               </View>
         );
-    };
+       };
 
-    // Renderizar gráfico de barras
+    
     const renderGraficaBarras = () => {
         return (
             <View style={styles.graficaContainer}>
@@ -153,7 +151,7 @@ export default function Graficas({ navigation }) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#46607C" />
             
-            {/* Header Modificado Estilo Imagen */}
+            {}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Inicio')}>
                     <Image style={styles.backIcon} source={require('../assets/regresar.png')} />
@@ -165,7 +163,7 @@ export default function Graficas({ navigation }) {
                 </View>
             </View>
 
-            {/* Se eliminó la linea2 y el botón de perfil para coincidir con la imagen */}
+            {}
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
                 {/* Selector de Tipo de Gráfica */}
@@ -270,28 +268,28 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
     },
-    // --- ESTILOS DEL HEADER MODIFICADOS ---
+   
     header: {
         width: '100%',
-        backgroundColor: '#46607C', // Color azul grisáceo de la imagen
-        height: 157, // Altura mayor para el bloque
+        backgroundColor: '#46607C', 
+        height: 157,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: Platform.OS === 'android' ? 20 : 0, // Ajuste para barra de estado
+        paddingTop: Platform.OS === 'android' ? 20 : 0, 
         marginBottom: 20,
         position: 'relative',
     },
     backButton: {
         position: 'absolute',
         left: 20,
-        top: 55, // Ajustado para centrarse verticalmente con el título visualmente
+        top: 55, 
         padding: 5,
         zIndex: 10,
     },
     backIcon: {
         width: 30,
         height: 30,
-        tintColor: '#fff', // Icono blanco
+        tintColor: '#fff', 
     },
     titleContainer: {
         alignItems: 'center',
@@ -301,11 +299,11 @@ const styles = StyleSheet.create({
     titleText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fff', // Texto blanco
+        color: '#fff', 
         textAlign: 'center',
         lineHeight: 28,
     },
-    // --------------------------------------
+  
     
     selectorGraficas: {
         flexDirection: 'row',
