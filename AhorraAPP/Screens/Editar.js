@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
 
-export default function Editar({ onBack, onNext }) {
+export default function Editar({ onBack, onNext, onUpdate, item }) {
+  const [monto, setMonto] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [fecha, setFecha] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [tipo, setTipo] = useState("gasto");
+
+  useEffect(() => {
+    if (item) {
+      setMonto(item.monto.toString());
+      setCategoria(item.categoria);
+      setFecha(item.fecha);
+      setDescripcion(item.descripcion);
+      setTipo(item.tipo);
+    }
+  }, [item]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -20,24 +36,60 @@ export default function Editar({ onBack, onNext }) {
       <View style={styles.line2} />
 
       <View style={styles.content}>
+        <View
+          style={{
+            flexDirection: "row",
+            marginBottom: 10,
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: tipo === "gasto" ? "red" : "green",
+            }}
+          >
+            {tipo === "gasto" ? "GASTO" : "INGRESO"}
+          </Text>
+        </View>
+
         <TextInput
-          placeholder="Monto Nuevo"
+          placeholder="Monto"
           style={styles.input}
           keyboardType="numeric"
+          value={monto}
+          onChangeText={setMonto}
         />
 
-        <TextInput placeholder="Categoría Nueva" style={styles.input} />
-
-        <TextInput placeholder="Fecha Nueva" style={styles.input} />
+        <TextInput
+          placeholder="Categoría"
+          style={styles.input}
+          value={categoria}
+          onChangeText={setCategoria}
+        />
 
         <TextInput
-          placeholder="Descripción Nueva"
+          placeholder="Fecha"
+          style={styles.input}
+          value={fecha}
+          onChangeText={setFecha}
+        />
+
+        <TextInput
+          placeholder="Descripción"
           style={[styles.input, styles.textArea]}
           multiline
+          value={descripcion}
+          onChangeText={setDescripcion}
         />
 
         <View style={styles.row}>
-          <TouchableOpacity style={[styles.boton, styles.cancel]}>
+          <TouchableOpacity
+            style={[styles.boton, styles.cancel]}
+            onPress={() =>
+              onUpdate(monto, categoria, fecha, descripcion, tipo)
+            }
+          >
             <Text style={styles.textoBoton}>Actualizar</Text>
           </TouchableOpacity>
 

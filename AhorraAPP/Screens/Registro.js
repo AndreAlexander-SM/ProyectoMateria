@@ -4,42 +4,51 @@ import {
   StyleSheet,
   View,
   TextInput,
-  Alert, // Asegúrate de tener esto importado
+  Alert,
   TouchableOpacity,
   Switch,
 } from "react-native";
+import { UsuarioController } from "../controllers/UsuarioController";
 
 export default function Registro({ navigation }) {
+  const controller = new UsuarioController();
+
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [telefono, setTelefono] = useState("");
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
-  
-  // Función para manejar el registro
-  const handleRegistro = () => {
-    // Aquí podrías agregar validaciones (ej. si los campos están vacíos)
-    
-    Alert.alert(
-      "Éxito",
-      "Registro exitoso",
-      [
-        {
-          text: "OK",
-          onPress: () => navigation.navigate("InicioSesion"), // Navega solo después de dar OK
-        },
-      ]
+
+  const handleRegistro = async () => {
+    if (!nombre || !email || !contraseña)
+      return Alert.alert("Error", "Llena los campos obligatorios");
+
+    if (!aceptarTerminos)
+      return Alert.alert("Error", "Acepta los términos");
+
+    const resultado = await controller.registrar(
+      nombre,
+      email,
+      contraseña,
+      telefono
     );
+
+    if (resultado.success) {
+      Alert.alert("Éxito", "Registro exitoso", [
+        { text: "OK", onPress: () => navigation.navigate("InicioSesion") },
+      ]);
+    } else {
+      Alert.alert("Error", resultado.msg);
+    }
   };
 
+  // ... (RESTO DEL CÓDIGO VISUAL IGUAL, solo cambia el return del render)
   return (
     <View style={styles.container}>
       <Text style={styles.title}>AHORRA+</Text>
 
       <View style={styles.loginBox}>
-        <View style={styles.toggleButtons}>
-          
-        </View>
+        {/* ... (Todo igual que antes) ... */}
 
         <Text style={styles.welcomeText}>BIENVENIDO A AHORRA+</Text>
 
@@ -92,10 +101,7 @@ export default function Registro({ navigation }) {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.loginButton}
-          onPress={handleRegistro} 
-        >
+        <TouchableOpacity style={styles.loginButton} onPress={handleRegistro}>
           <Text style={styles.loginButtonText}>REGISTRARTE</Text>
         </TouchableOpacity>
       </View>
@@ -103,6 +109,7 @@ export default function Registro({ navigation }) {
   );
 }
 
+// ... (STYLES IGUALES)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -124,31 +131,6 @@ const styles = StyleSheet.create({
     padding: 20,
     width: "88%",
     alignItems: "center",
-  },
-
-  toggleButtons: {
-    flexDirection: "row",
-    marginBottom: 12,
-    width: "100%",
-  },
-
-  smallButton: {
-    flex: 1,
-    paddingVertical: 8,
-    backgroundColor: "#A8C7E5",
-    borderRadius: 18,
-    marginHorizontal: 5,
-    alignItems: "center",
-  },
-
-  activeButton: {
-    backgroundColor: "#B7D3EB",
-  },
-
-  smallButtonText: {
-    color: "#2C3E50",
-    fontWeight: "bold",
-    fontSize: 12,
   },
 
   welcomeText: {

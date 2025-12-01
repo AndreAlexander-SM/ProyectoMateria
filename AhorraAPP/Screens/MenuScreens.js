@@ -1,11 +1,12 @@
-import React from "react";
-import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Image } from "react-native";
+import React, { useState, useCallback } from "react";
+import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Image, StatusBar } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { UsuarioController } from "../controllers/UsuarioController";
+import { TransaccionController } from "../controllers/TransaccionController";
+import { ApartadoController } from "../controllers/ApartadoController";
 
 const BalanceCard = ({ icon, label, amount, color, onPress }) => (
-  <TouchableOpacity
-    style={[styles.card, { backgroundColor: color }]}
-    onPress={onPress}
-  >
+  <TouchableOpacity style={[styles.card, { backgroundColor: color }]} onPress={onPress}>
     <View style={styles.cardContent}>
       <Text style={styles.cardIcon}>{icon}</Text>
       <View>
@@ -18,112 +19,150 @@ const BalanceCard = ({ icon, label, amount, color, onPress }) => (
 );
 
 export default function Menu({ navigation }) {
-  const handleTabPress = (tab) => {
-    console.log(`Pestaña ${tab} presionada. La navegación real estaría fuera de este componente.`);
+  const userCtrl = new UsuarioController();
+  const transCtrl = new TransaccionController();
+  const apartadoCtrl = new ApartadoController();
+
+  const [nombre, setNombre] = useState("Usuario");
+
+  const [finanzas, setFinanzas] = useState({
+    ingresos: 0,
+    gastos: 0,
+    ahorros: 0,
+    disponible: 0
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      const user = userCtrl.getUsuarioActivo();
+
+      if (user) {
+        setNombre(user.nombre);
+        cargarDatosFinancieros(user.id);
+      } else {
+        navigation.replace("InicioSesion");
+      }
+    }, [])
+  );
+
+  const cargarDatosFinancieros = async (id) => {
+    const balanceTrans = await transCtrl.obtenerBalance(id);
+    const totalAhorrado = await apartadoCtrl.obtenerTotalAhorrado(id);
+    const dineroNeto = balanceTrans.total - totalAhorrado;
+
+    setFinanzas({
+      ingresos: balanceTrans.ingresos,
+      gastos: balanceTrans.gastos,
+      ahorros: totalAhorrado,
+      disponible: dineroNeto
+    });
+  };
+
+  const formatoMoneda = (num) => {
+    return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
   };
 
   return (
     <View style={styles.container}>
-      {/* HEADER con Pestañas y Configuración */}
+      <StatusBar barStyle="light-content" backgroundColor="#46617A" />
+
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerBtn}
-          // MODIFICACIÓN: Usa 'replace' para simular un cierre de sesión y volver a InicioSesion.
-          onPress={() => navigation.replace("InicioSesion")}
+          onPress={() => {
+            userCtrl.cerrarSesion();
+            navigation.replace("InicioSesion");
+          }}
         >
           <Image
-            style={styles.headerIconImage} // Cambié el estilo para que tenga tamaño
+            style={styles.headerIconImage}
             source={require("../assets/cerrarSesion.png")}
-            resizeMode="contain" // Ayuda a que la imagen se ajuste bien
+            resizeMode="contain"
           />
         </TouchableOpacity>
-
 
         <TouchableOpacity style={styles.monthContainer}>
           <Text style={styles.Text}>Ahorra+ APP</Text>
         </TouchableOpacity>
-        {}
-        <View style={{ width: 24 }} /> 
+
+        <View style={{ width: 24 }} />
       </View>
 
-      {/* Selector de Cuentas (Hola Usuario!) - CENTRADO */}
       <View style={styles.accountSelector}>
-        <TouchableOpacity
-          style={styles.accountTabActiveCentered}
-          onPress={() => handleTabPress("Personal")}
-        >
-          <Text style={styles.accountTabTextActive}>Hola Usuario!</Text>
+        <TouchableOpacity style={styles.accountTabActiveCentered}>
+          <Text style={styles.accountTabTextActive}>Hola {nombre.split(" ")[0]}!</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Sub-Pestañas (Mis Gastos) - CENTRADO */}
         <View style={styles.subTabsCentered}>
-          <Text style={styles.subTabActiveCenteredText}>Resumen</Text>
+          <Text style={styles.subTabActiveCenteredText}>Resumen Global</Text>
         </View>
 
-        {/* Balance Acumulado */}
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceLabel}>Dinero Disponible</Text>
+          <Text style={styles.balanceLabel}>Dinero Disponible (Libre)</Text>
+
           <View style={styles.balanceRow}>
-            <Text style={styles.balanceAmount}>$0,00</Text>
-            <TouchableOpacity style={styles.balanceAddButton}>
+            <Text
+              style={[
+                styles.balanceAmount,
+                { color: finanzas.disponible >= 0 ? "#222" : "#FF3B30" }
+              ]}
+            >
+              {formatoMoneda(finanzas.disponible)}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.balanceAddButton}
+              onPress={() => navigation.navigate("Transacciones")}
+            >
               <Text style={styles.balanceAddText}>+</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-
         <BalanceCard
           icon="💲"
-          label="Ingresos"
-          amount="$0,00"
+          label="Ingresos Totales"
+          amount={formatoMoneda(finanzas.ingresos)}
           color="#e0fff1"
           onPress={() => navigation.navigate("Transacciones")}
         />
+
         <BalanceCard
           icon="⬇️⬆️"
-          label="Gastos"
-          amount="$0,00"
+          label="Gastos Totales"
+          amount={formatoMoneda(finanzas.gastos)}
           color="#ffe0e0"
           onPress={() => navigation.navigate("Transacciones")}
         />
+
         <BalanceCard
           icon="🪙"
-          label="Ahorros"
-          amount="$0,00"
+          label="Ahorros (Apartados)"
+          amount={formatoMoneda(finanzas.ahorros)}
           color="#fffde0"
           onPress={() => navigation.navigate("Presupuestos")}
         />
 
-        {/* Mis Presupuestos */}
-        <Text style={styles.budgetsTitle}>Mis Presupuestos</Text>
+        <Text style={styles.budgetsTitle}>Acciones Rápidas</Text>
+
         <TouchableOpacity
           style={styles.budgetsAddButton}
           onPress={() => navigation.navigate("Presupuestos")}
         >
-          <Text style={styles.budgetsAddText}>Agregá un presupuesto</Text>
-          <Text style={styles.budgetsAddIcon}>+</Text>
+          <Text style={styles.budgetsAddText}>Ver mis Apartados</Text>
+          <Text style={styles.budgetsAddIcon}>→</Text>
         </TouchableOpacity>
-
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 20, borderRadius: 20 },
 
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderRadius: 20,
-  },
-
-  // --- Estilos del Header ---
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -131,60 +170,47 @@ const styles = StyleSheet.create({
     backgroundColor: "#46617A",
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 15,
-  },
-  // CORRECCIÓN DE ESTILO: Las imágenes necesitan ancho y alto explícito
-  headerIconImage: {
-    width: 24,
-    height: 24, 
-    tintColor: "#fff", // Esto pinta el PNG de blanco si es un icono transparente
-  },
-  headerBtn: {
-    // Asegúrate de que el área de toque sea lo suficientemente grande
-    padding: 5, 
-  },
-  monthContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  Text: {
-    fontSize: 20,
-    color: "#fff",
-    fontWeight: "bold",
+    paddingBottom: 15
   },
 
-  // --- Estilos del Selector de Cuentas ---
+  headerIconImage: { width: 24, height: 24, tintColor: "#fff" },
+  headerBtn: { padding: 5 },
+  monthContainer: { flexDirection: "row", alignItems: "center" },
+  Text: { fontSize: 20, color: "#fff", fontWeight: "bold" },
+
   accountSelector: {
     backgroundColor: "#46617A",
     paddingHorizontal: 20,
     paddingBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center"
   },
+
   accountTabActiveCentered: {
     backgroundColor: "#fff",
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 30,
     minWidth: 150,
-    alignSelf: 'center',
+    alignSelf: "center"
   },
+
   accountTabTextActive: {
     color: "#31356E",
     fontWeight: "bold",
-    textAlign: 'center',
-    fontSize: 16,
+    textAlign: "center",
+    fontSize: 16
   },
 
-  // --- Estilos de Sub-Pestañas ---
   subTabsCentered: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 15,
     marginBottom: 20,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 20
   },
+
   subTabActiveCenteredText: {
     fontSize: 16,
     fontWeight: "bold",
@@ -192,45 +218,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderColor: "#31356E",
     paddingBottom: 5,
-    textAlign: 'center',
+    textAlign: "center"
   },
 
-  // --- Estilos de Balance ---
-  balanceContainer: {
-    marginBottom: 20,
-    paddingHorizontal: 0,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 5,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  balanceAmount: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#222",
-  },
+  balanceContainer: { marginBottom: 20, paddingHorizontal: 0 },
+  balanceLabel: { fontSize: 14, color: "#888", marginBottom: 5 },
+  balanceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  balanceAmount: { fontSize: 36, fontWeight: "bold", color: "#222" },
+
   balanceAddButton: {
     backgroundColor: "#31356E",
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  balanceAddText: {
-    color: "#fff",
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: "300",
+    alignItems: "center"
   },
 
-  // --- Estilos de las Tarjetas ---
+  balanceAddText: { color: "#fff", fontSize: 24, lineHeight: 30, fontWeight: "300" },
+
   card: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -243,43 +249,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-    elevation: 2,
-  },
-  cardContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  cardIcon: {
-    fontSize: 24,
-    marginRight: 15,
-    width: 30,
-    textAlign: "center",
-  },
-  cardLabel: {
-    fontSize: 16,
-    color: "#555",
-    fontWeight: "600",
-  },
-  cardAmount: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 2,
-  },
-  cardArrow: {
-    fontSize: 20,
-    color: "#999",
-    fontWeight: "300",
+    elevation: 2
   },
 
-  // --- Estilos de Presupuestos ---
+  cardContent: { flexDirection: "row", alignItems: "center" },
+  cardIcon: { fontSize: 24, marginRight: 15, width: 30, textAlign: "center" },
+  cardLabel: { fontSize: 16, color: "#555", fontWeight: "600" },
+  cardAmount: { fontSize: 24, fontWeight: "bold", marginTop: 2 },
+  cardArrow: { fontSize: 20, color: "#999", fontWeight: "300" },
+
   budgetsTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#222",
     marginTop: 20,
     marginBottom: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
+
   budgetsAddButton: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -294,12 +281,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 1,
-    elevation: 1,
+    elevation: 1
   },
-  budgetsAddText: {
-    fontSize: 16,
-    color: "#222",
-  },
+
+  budgetsAddText: { fontSize: 16, color: "#222" },
   budgetsAddIcon: {
     backgroundColor: "#31356E",
     width: 30,
@@ -309,6 +294,6 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: "#fff",
     fontSize: 20,
-    fontWeight: "300",
-  },
+    fontWeight: "300"
+  }
 });

@@ -1,12 +1,29 @@
-import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 
-export default function Agregar({ onBack }) {
+export default function Agregar({ onBack, onSave }) {
+  const [monto, setMonto] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [fecha, setFecha] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [tipo, setTipo] = useState("gasto");
+
+  const handleSave = () => {
+    if (!monto || !categoria || !fecha) {
+      return Alert.alert("Error", "Campos obligatorios vacíos");
+    }
+
+    onSave(monto, categoria, fecha, descripcion, tipo);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerBtn} onPress={onBack}>
-          <Image style={styles.headerIcon} source={require("../assets/regresar.png")} />
+          <Image
+            style={styles.headerIcon}
+            source={require("../assets/regresar.png")}
+          />
         </TouchableOpacity>
 
         <Text style={styles.title}>Agregar Transacción</Text>
@@ -17,13 +34,60 @@ export default function Agregar({ onBack }) {
       <View style={styles.line2} />
 
       <View style={styles.content}>
-        <TextInput placeholder="Monto" style={styles.input} keyboardType="numeric" />
-        <TextInput placeholder="Categoría" style={styles.input} />
-        <TextInput placeholder="Fecha" style={styles.input} />
+        <View style={{ flexDirection: "row", marginBottom: 15 }}>
+          <TouchableOpacity
+            onPress={() => setTipo("gasto")}
+            style={[
+              styles.typeBtn,
+              tipo === "gasto" ? { backgroundColor: "#ff3b30" } : {},
+            ]}
+          >
+            <Text style={{ color: tipo === "gasto" ? "white" : "black" }}>
+              Gasto
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setTipo("ingreso")}
+            style={[
+              styles.typeBtn,
+              tipo === "ingreso" ? { backgroundColor: "#00dcb4" } : {},
+            ]}
+          >
+            <Text style={{ color: tipo === "ingreso" ? "white" : "black" }}>
+              Ingreso
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          placeholder="Monto"
+          style={styles.input}
+          keyboardType="numeric"
+          value={monto}
+          onChangeText={setMonto}
+        />
+
+        <TextInput
+          placeholder="Categoría (Ej. Hogar)"
+          style={styles.input}
+          value={categoria}
+          onChangeText={setCategoria}
+        />
+
+        <TextInput
+          placeholder="Fecha (DD/MM/AAAA)"
+          style={styles.input}
+          value={fecha}
+          onChangeText={setFecha}
+        />
+
         <TextInput
           placeholder="Descripción"
           style={[styles.input, styles.textArea]}
           multiline
+          value={descripcion}
+          onChangeText={setDescripcion}
         />
 
         <View style={styles.row}>
@@ -31,7 +95,10 @@ export default function Agregar({ onBack }) {
             <Text style={styles.textoBoton}>Cancelar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.boton, styles.guardar]}>
+          <TouchableOpacity
+            style={[styles.boton, styles.guardar]}
+            onPress={handleSave}
+          >
             <Text style={styles.textoBoton}>Guardar</Text>
           </TouchableOpacity>
         </View>
@@ -83,6 +150,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
+  typeBtn: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center",
+    marginHorizontal: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -116,7 +193,7 @@ const styles = StyleSheet.create({
   },
 
   guardar: {
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#31356E",
     marginLeft: 10,
   },
 

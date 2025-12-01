@@ -4,8 +4,6 @@ import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView, Platform, 
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 
-// Ya no necesitamos importar EliminarA si lo vamos a hacer con Alert
-// import EliminarA from "./EliminarA";
 
 export default function PresupuestosMensuales({ navigation }) {
   const [screen, setScreen] = useState("apartados");

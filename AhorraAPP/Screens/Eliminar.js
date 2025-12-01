@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 
-export default function Eliminar({ onBack }) {
+export default function Eliminar({ onBack, onConfirm }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -22,10 +22,12 @@ export default function Eliminar({ onBack }) {
       <View style={styles.content}>
         <View style={styles.card}>
           <Text style={styles.tituloCard}>
-            ¿Seguro que deseas eliminar esta transacción?
+            ¿Seguro que deseas eliminar?
           </Text>
 
-          <Text style={styles.texto}>Esta acción es irreversible.</Text>
+          <Text style={styles.texto}>
+            Esta acción borrará el registro de la base de datos y actualizará tu balance.
+          </Text>
 
           <View style={styles.row}>
             <TouchableOpacity
@@ -35,7 +37,10 @@ export default function Eliminar({ onBack }) {
               <Text style={styles.textoBoton}>Cancelar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.boton, styles.delete]}>
+            <TouchableOpacity
+              style={[styles.boton, styles.delete]}
+              onPress={onConfirm}
+            >
               <Text style={[styles.textoBoton, { color: "white" }]}>
                 Aceptar
               </Text>

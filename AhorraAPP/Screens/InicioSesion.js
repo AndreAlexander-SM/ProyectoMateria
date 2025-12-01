@@ -1,19 +1,22 @@
 import React, { useState } from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  TextInput,
-  Alert,
-  TouchableOpacity,
-} from "react-native";
+import { Text, StyleSheet, View, TextInput, Alert, TouchableOpacity } from "react-native";
+import { UsuarioController } from "../controllers/UsuarioController";
 
 export default function InicioSesion({ navigation }) {
+  const controller = new UsuarioController();
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
 
-  const manejarInicioSesion = () => {
-    navigation.replace("MainApp");
+  const manejarInicioSesion = async () => {
+    if (!email || !contraseña) return Alert.alert("Error", "Ingresa tus datos");
+
+    const usuario = await controller.validarLogin(email, contraseña);
+
+    if (usuario) {
+      navigation.replace("MainApp");
+    } else {
+      Alert.alert("Error", "Credenciales incorrectas");
+    }
   };
 
   return (
@@ -48,10 +51,7 @@ export default function InicioSesion({ navigation }) {
           secureTextEntry
         />
 
-        <TouchableOpacity
-          style={styles.loginButton}
-          onPress={manejarInicioSesion}
-        >
+        <TouchableOpacity style={styles.loginButton} onPress={manejarInicioSesion}>
           <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
 
@@ -68,77 +68,67 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center"
   },
-
   title: {
     color: "#2C3E50",
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 50,
+    marginBottom: 50
   },
-
   loginBox: {
     backgroundColor: "#46617A",
     borderRadius: 20,
     padding: 25,
     width: "85%",
-    alignItems: "center",
+    alignItems: "center"
   },
-
   toggleButtons: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 20
   },
-
   smallButton: {
     flex: 1,
     paddingVertical: 10,
     backgroundColor: "#A8C7E5",
     borderRadius: 20,
     marginHorizontal: 5,
-    alignItems: "center",
+    alignItems: "center"
   },
-
   longButtonText: {
     color: "#2C3E50",
     fontWeight: "bold",
-    fontSize: 12,
+    fontSize: 12
   },
-
   label: {
     color: "#fcf5f5ff",
     alignSelf: "flex-start",
     fontSize: 12,
-    marginBottom: 5,
+    marginBottom: 5
   },
-
   input: {
     borderBottomColor: "#ffffffff",
     borderBottomWidth: 1,
     color: "#e7e6e6ff",
     width: "100%",
     marginBottom: 20,
-    paddingVertical: 5,
+    paddingVertical: 5
   },
-
   loginButton: {
     backgroundColor: "#A8C7E5",
     paddingVertical: 12,
     borderRadius: 30,
     marginTop: 10,
-    width: "100%",
+    width: "100%"
   },
-
   loginButtonText: {
     textAlign: "center",
     color: "#2C3E50",
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
-
   recoverText: {
     color: "#D6E3F3",
     marginTop: 15,
-    fontSize: 12,
-  },
+    fontSize: 12
+  }
 });
