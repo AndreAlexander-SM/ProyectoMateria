@@ -1,13 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-  Image,
-} from "react-native";
+import {View,Text,TouchableOpacity,StyleSheet,ScrollView,SafeAreaView, Image, Alert} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
@@ -21,18 +13,41 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
   const transCtrl = new TransaccionController();
   const userCtrl = new UsuarioController();
 
+
+  const cargarDatos = async () => {
+    const user = await userCtrl.getUsuarioActivo();
+    if (user) {
+      const data = await transCtrl.obtenerTodas(user.id);
+      setListaTransacciones(data);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
-      const user = userCtrl.getUsuarioActivo();
-      if (user) {
-        transCtrl.obtenerTodas(user.id).then((data) => setListaTransacciones(data));
-      }
+      cargarDatos();
     }, [])
   );
 
-  // Categorías únicas
+  const handleDelete = (id) => {
+    Alert.alert(
+      "Eliminar",
+      "¿Estás seguro de borrar esta transacción?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Borrar", 
+          style: "destructive",
+          onPress: async () => {
+            await transCtrl.eliminar(id);
+            cargarDatos(); 
+          }
+        }
+      ]
+    );
+  };
+
   const uniqueCategories = [
-    ...new Set(listaTransacciones.map((item) => item.categoria)),
+    ...new Set(listaTransacciones.map((item) => item.categoria))
   ];
 
   const renderCard = (item, index) => (
@@ -49,11 +64,12 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
         <Text
           style={[
             styles.montoText,
-            item.tipo === "gasto" ? styles.textRed : styles.textBlack,
+            item.tipo === "gasto" ? styles.textRed : styles.textBlack
           ]}
         >
           ${item.monto.toFixed(2)}
         </Text>
+
         <Text style={styles.conceptoText}>{item.categoria}</Text>
         <Text style={styles.fechaDetailText}>{item.fecha}</Text>
 
@@ -65,8 +81,19 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
       </View>
 
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.btnEditar} onPress={() => onEdit(item)}>
+        <TouchableOpacity
+          style={styles.btnEditar}
+          onPress={() => onEdit(item)}
+        >
           <Text style={styles.btnTextSmall}>Editar</Text>
+        </TouchableOpacity>
+
+
+        <TouchableOpacity
+          style={[styles.btnEditar, { backgroundColor: "#ff3b30" }]}
+          onPress={() => handleDelete(item.id)}
+        >
+          <Text style={styles.btnTextSmall}>Borrar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -104,14 +131,14 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
           <TouchableOpacity
             style={[
               styles.tabItem,
-              activeTab === "fecha" && styles.activeTabBorder,
+              activeTab === "fecha" && styles.activeTabBorder
             ]}
             onPress={() => setActiveTab("fecha")}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === "fecha" && styles.activeTabText,
+                activeTab === "fecha" && styles.activeTabText
               ]}
             >
               Fecha
@@ -121,14 +148,14 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
           <TouchableOpacity
             style={[
               styles.tabItem,
-              activeTab === "categoria" && styles.activeTabBorder,
+              activeTab === "categoria" && styles.activeTabBorder
             ]}
             onPress={() => setActiveTab("categoria")}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === "categoria" && styles.activeTabText,
+                activeTab === "categoria" && styles.activeTabText
               ]}
             >
               Categoría
@@ -172,67 +199,89 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
   );
 }
 
-// (Mantén tus estilos, solo asegúrate de que headerIcon y plusIconHeader tengan estilos)
 const styles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: "white" },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "white"
+  },
 
   headerContainer: {
     backgroundColor: "#46607C",
     paddingTop: 50,
     paddingBottom: 20,
-    height: 120,
+    height: 120
   },
 
   headerTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 20
   },
 
-  headerTitle: { fontSize: 25, fontWeight: "bold", color: "white" },
+  headerTitle: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "white"
+  },
 
   backIcon: {
     width: 30,
     height: 30,
     tintColor: "#fff",
-    resizeMode: "contain",
+    resizeMode: "contain"
   },
 
   plusIconHeader: {
     width: 30,
     height: 30,
     tintColor: "#fff",
-    resizeMode: "contain",
+    resizeMode: "contain"
   },
 
-  bodyContainer: { flex: 1, paddingHorizontal: 20, marginTop: 10 },
+  bodyContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    marginTop: 10
+  },
 
   subHeaderTitle: {
     textAlign: "center",
     fontSize: 16,
     color: "#333",
-    marginBottom: 15,
+    marginBottom: 15
   },
 
   tabRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 15,
+    marginBottom: 15
   },
 
-  tabItem: { paddingBottom: 5, minWidth: 80, alignItems: "center" },
+  tabItem: {
+    paddingBottom: 5,
+    minWidth: 80,
+    alignItems: "center"
+  },
 
   activeTabBorder: {
     borderBottomWidth: 3,
-    borderBottomColor: "#46607C",
+    borderBottomColor: "#46607C"
   },
 
-  tabText: { fontSize: 16, color: "#666" },
+  tabText: {
+    fontSize: 16,
+    color: "#666"
+  },
 
-  activeTabText: { color: "#000", fontWeight: "600" },
+  activeTabText: {
+    color: "#000",
+    fontWeight: "600"
+  },
 
-  scrollView: { width: "100%" },
+  scrollView: {
+    width: "100%"
+  },
 
   categoryPill: {
     backgroundColor: "#46617A",
@@ -240,10 +289,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     borderRadius: 20,
     alignSelf: "center",
-    marginVertical: 10,
+    marginVertical: 10
   },
 
-  categoryPillText: { color: "white", fontWeight: "bold", fontSize: 14 },
+  categoryPillText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 14
+  },
 
   card: {
     flexDirection: "row",
@@ -253,39 +306,65 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#bdc3c7",
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 10
   },
 
-  iconContainer: { marginRight: 10 },
+  iconContainer: {
+    marginRight: 10
+  },
 
-  infoContainer: { flex: 1 },
+  infoContainer: {
+    flex: 1
+  },
 
-  montoText: { fontSize: 18, fontWeight: "bold" },
+  montoText: {
+    fontSize: 18,
+    fontWeight: "bold"
+  },
 
-  textRed: { color: "#ff3b30" },
+  textRed: {
+    color: "#ff3b30"
+  },
 
-  textBlack: { color: "#333" },
+  textBlack: {
+    color: "#333"
+  },
 
-  conceptoText: { fontSize: 13, color: "#333", fontWeight: "500" },
+  conceptoText: {
+    fontSize: 13,
+    color: "#333",
+    fontWeight: "500"
+  },
 
-  fechaDetailText: { fontSize: 10, color: "#666", marginTop: 2 },
+  fechaDetailText: {
+    fontSize: 10,
+    color: "#666",
+    marginTop: 2
+  },
 
-  actionsContainer: { flexDirection: "row", gap: 8 },
+  actionsContainer: {
+    flexDirection: "row",
+    gap: 8
+  },
 
   btnEditar: {
     backgroundColor: "#ffab00",
     paddingVertical: 5,
     paddingHorizontal: 10,
-    borderRadius: 15,
+    borderRadius: 15
   },
 
-  btnTextSmall: { color: "white", fontSize: 10, fontWeight: "bold" },
+  btnTextSmall: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold"
+  },
 
   gradientFade: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: 50,
-  },
+    height: 50
+  }
 });

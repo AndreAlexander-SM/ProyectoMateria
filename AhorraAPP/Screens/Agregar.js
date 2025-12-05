@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 
+import { TransaccionController } from "../controllers/TransaccionController";
+import { UsuarioController } from "../controllers/UsuarioController";
+
 export default function Agregar({ onBack, onSave }) {
   const [monto, setMonto] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -8,12 +11,42 @@ export default function Agregar({ onBack, onSave }) {
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState("gasto");
 
-  const handleSave = () => {
+  const transCtrl = new TransaccionController();
+  const userCtrl = new UsuarioController();
+
+  const handleSave = async () => {
     if (!monto || !categoria || !fecha) {
       return Alert.alert("Error", "Campos obligatorios vacíos");
     }
 
-    onSave(monto, categoria, fecha, descripcion, tipo);
+    const usuario = await userCtrl.getUsuarioActivo();
+
+    if (!usuario) {
+      return Alert.alert("Error", "No hay sesión activa");
+    }
+
+    const exito = await transCtrl.agregar(
+      usuario.id,
+      monto,
+      categoria,
+      fecha,
+      descripcion,
+      tipo
+    );
+
+    if (exito) {
+      Alert.alert("¡Listo!", "Transacción guardada correctamente", [
+        {
+          text: "OK",
+          onPress: () => {
+            if (onSave) onSave();
+            onBack();
+          },
+        },
+      ]);
+    } else {
+      Alert.alert("Error", "No se pudo guardar la transacción");
+    }
   };
 
   return (
@@ -91,7 +124,10 @@ export default function Agregar({ onBack, onSave }) {
         />
 
         <View style={styles.row}>
-          <TouchableOpacity style={[styles.boton, styles.cancel]} onPress={onBack}>
+          <TouchableOpacity
+            style={[styles.boton, styles.cancel]}
+            onPress={onBack}
+          >
             <Text style={styles.textoBoton}>Cancelar</Text>
           </TouchableOpacity>
 

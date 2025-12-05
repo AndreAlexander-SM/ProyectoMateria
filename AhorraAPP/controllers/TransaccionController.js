@@ -9,8 +9,9 @@ import { Transaccion } from "../models/Transaccion";
 
 export class TransaccionController {
   async agregar(usuarioId, monto, categoria, fecha, descripcion, tipo) {
+    const montoString = monto ? monto.toString() : "0";
     const montoLimpio = parseFloat(
-      monto.toString().replace("$", "").replace(",", "")
+      montoString.replace("$", "").replace(",", "")
     );
 
     try {
@@ -24,7 +25,7 @@ export class TransaccionController {
       );
       return true;
     } catch (e) {
-      console.log(e);
+      console.log("Error al agregar transacción:", e);
       return false;
     }
   }
@@ -45,13 +46,15 @@ export class TransaccionController {
           )
       );
     } catch (e) {
+      console.log("Error al obtener transacciones:", e);
       return [];
     }
   }
 
   async editar(id, monto, categoria, fecha, descripcion, tipo) {
+    const montoString = monto ? monto.toString() : "0";
     const montoLimpio = parseFloat(
-      monto.toString().replace("$", "").replace(",", "")
+      montoString.replace("$", "").replace(",", "")
     );
 
     try {
@@ -65,6 +68,7 @@ export class TransaccionController {
       );
       return true;
     } catch (e) {
+      console.log("Error al editar:", e);
       return false;
     }
   }
@@ -74,6 +78,7 @@ export class TransaccionController {
       await deleteTransaccionDB(id);
       return true;
     } catch (e) {
+      console.log("Error al eliminar:", e);
       return false;
     }
   }
@@ -85,8 +90,9 @@ export class TransaccionController {
     let gastos = 0;
 
     transacciones.forEach((t) => {
-      if (t.tipo === "ingreso") ingresos += t.monto;
-      if (t.tipo === "gasto") gastos += Math.abs(t.monto);
+      const valor = parseFloat(t.monto);
+      if (t.tipo === "ingreso") ingresos += valor;
+      if (t.tipo === "gasto") gastos += Math.abs(valor);
     });
 
     return {
@@ -103,10 +109,11 @@ export class TransaccionController {
     transacciones
       .filter((t) => t.tipo === "gasto")
       .forEach((t) => {
+        const valor = Math.abs(parseFloat(t.monto));
         if (gastosPorCategoria[t.categoria]) {
-          gastosPorCategoria[t.categoria] += Math.abs(t.monto);
+          gastosPorCategoria[t.categoria] += valor;
         } else {
-          gastosPorCategoria[t.categoria] = Math.abs(t.monto);
+          gastosPorCategoria[t.categoria] = valor;
         }
       });
 

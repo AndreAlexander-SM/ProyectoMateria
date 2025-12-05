@@ -1,42 +1,50 @@
-import { insertUsuario, loginUsuario } from "../database/Database";
+import {
+  insertUsuario,
+  loginUsuario,
+  updatePasswordByEmail,
+} from "../database/Database";
 import { Usuario } from "../models/Usuario";
 
 export class UsuarioController {
   static usuarioActivo = null;
 
   async registrar(nombre, email, password, telefono) {
-    if (!email || !password) {
-      return { success: false, msg: "Faltan datos obligatorios." };
-    }
-
     try {
       await insertUsuario(nombre, email.toLowerCase(), password, telefono);
       return { success: true };
-    } catch (error) {
-      return { success: false, msg: "El correo ya existe." };
+    } catch (e) {
+      return { success: false, msg: "Este correo ya está registrado." };
     }
   }
 
   async validarLogin(email, password) {
+    const data = await loginUsuario(email.toLowerCase(), password);
+
+    if (data) {
+      const user = new Usuario(
+        data.id,
+        data.nombre,
+        data.email,
+        data.password,
+        data.telefono
+      );
+
+      UsuarioController.usuarioActivo = user;
+      return user;
+    }
+
+    return null;
+  }
+
+  async recuperarPassword(email, nuevaPassword) {
     try {
-      const data = await loginUsuario(email.toLowerCase(), password);
-
-      if (data) {
-        const user = new Usuario(
-          data.id,
-          data.nombre,
-          data.email,
-          data.password,
-          data.telefono
-        );
-
-        UsuarioController.usuarioActivo = user;
-        return user;
-      }
-
-      return null;
-    } catch (error) {
-      return null;
+      const res = await updatePasswordByEmail(
+        email.toLowerCase(),
+        nuevaPassword
+      );
+      return res.changes > 0;
+    } catch (e) {
+      return false;
     }
   }
 

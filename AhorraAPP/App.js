@@ -12,6 +12,7 @@ import Menu from "./Screens/MenuScreens";
 import Gestion from "./Screens/GestionDeTransacciones";
 import Graficas from "./Screens/Graficas";
 import Apartados from "./Screens/PresupuestosMensuales";
+import PerfilScreen from "./Screens/PerfilScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,6 +55,7 @@ export default function App() {
         <Stack.Screen name="Registro" component={Registro} />
         <Stack.Screen name="Recuperar" component={RecuperarContraseña} />
         <Stack.Screen name="MainApp" component={HomeTabs} />
+        <Stack.Screen name="Perfil" component={PerfilScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

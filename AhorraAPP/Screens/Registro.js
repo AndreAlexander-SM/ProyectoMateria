@@ -1,13 +1,6 @@
 import React, { useState } from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  TextInput,
-  Alert,
-  TouchableOpacity,
-  Switch,
-} from "react-native";
+import { Text, StyleSheet, View, TextInput, Alert, TouchableOpacity, Switch } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { UsuarioController } from "../controllers/UsuarioController";
 
 export default function Registro({ navigation }) {
@@ -18,90 +11,105 @@ export default function Registro({ navigation }) {
   const [contraseña, setContraseña] = useState("");
   const [telefono, setTelefono] = useState("");
   const [aceptarTerminos, setAceptarTerminos] = useState(false);
+  const [verPassword, setVerPassword] = useState(false);
 
-  const handleRegistro = async () => {
-    if (!nombre || !email || !contraseña)
-      return Alert.alert("Error", "Llena los campos obligatorios");
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!aceptarTerminos)
-      return Alert.alert("Error", "Acepta los términos");
+  const validarCampos = () => {
+    if (nombre.trim() === "") return Alert.alert("Error", "Por favor ingresa tu nombre completo");
+    if (email.trim() === "" || !emailRegex.test(email)) return Alert.alert("Error", "Correo inválido");
+    if (contraseña.trim() === "") return Alert.alert("Error", "Completa tu contraseña");
+    if (!aceptarTerminos) return Alert.alert("Error", "Debes aceptar los términos");
+    return true;
+  };
 
-    const resultado = await controller.registrar(
-      nombre,
-      email,
-      contraseña,
-      telefono
-    );
+  const mostrarAlerta = async () => {
+    if (!validarCampos()) return;
+
+    const resultado = await controller.registrar(nombre, email, contraseña, telefono);
 
     if (resultado.success) {
-      Alert.alert("Éxito", "Registro exitoso", [
-        { text: "OK", onPress: () => navigation.navigate("InicioSesion") },
+      Alert.alert("¡Registro Exitoso!", "Ahora puedes iniciar sesión.", [
+        { text: "Ir a Iniciar Sesión", onPress: () => navigation.navigate("InicioSesion") }
       ]);
+
+      setNombre("");
+      setEmail("");
+      setContraseña("");
+      setTelefono("");
+      setAceptarTerminos(false);
     } else {
       Alert.alert("Error", resultado.msg);
     }
   };
 
-  // ... (RESTO DEL CÓDIGO VISUAL IGUAL, solo cambia el return del render)
   return (
     <View style={styles.container}>
       <Text style={styles.title}>AHORRA+</Text>
 
       <View style={styles.loginBox}>
-        {/* ... (Todo igual que antes) ... */}
+        <View style={styles.toggleButtons}>
+          <TouchableOpacity style={styles.smallButton} onPress={() => navigation.navigate("InicioSesion")}>
+            <Text style={styles.smallButtonText}>INICIAR SESIÓN</Text>
+          </TouchableOpacity>
 
-        <Text style={styles.welcomeText}>BIENVENIDO A AHORRA+</Text>
-
-        <Text style={styles.label}>NOMBRE COMPLETO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej. Nombre Apellido"
-          placeholderTextColor="#dce6f0"
-          value={nombre}
-          onChangeText={setNombre}
-        />
-
-        <Text style={styles.label}>EMAIL</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej. nombre@gmail.com"
-          placeholderTextColor="#dce6f0"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        <Text style={styles.label}>CONTRASEÑA</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="*"
-          placeholderTextColor="#dce6f0"
-          value={contraseña}
-          onChangeText={setContraseña}
-          secureTextEntry
-        />
-
-        <Text style={styles.label}>TELÉFONO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej. 5512345678"
-          placeholderTextColor="#dce6f0"
-          value={telefono}
-          onChangeText={setTelefono}
-          keyboardType="phone-pad"
-        />
-
-        <View style={styles.checkboxContainer}>
-          <Switch
-            value={aceptarTerminos}
-            onValueChange={setAceptarTerminos}
-          />
-          <Text style={styles.checkboxLabel}>
-            Aceptar términos y condiciones
-          </Text>
+          <TouchableOpacity style={[styles.smallButton, styles.activeButton]}>
+            <Text style={styles.smallButtonText}>REGÍSTRATE</Text>
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleRegistro}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="NOMBRE"
+            placeholderTextColor="gray"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            placeholder="EMAIL"
+            placeholderTextColor="gray"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="phone-pad"
+            placeholder="TELÉFONO"
+            placeholderTextColor="gray"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={contraseña}
+            onChangeText={setContraseña}
+            secureTextEntry={!verPassword}
+            placeholder="CONTRASEÑA"
+            placeholderTextColor="gray"
+          />
+          <TouchableOpacity onPress={() => setVerPassword(!verPassword)} style={styles.eyeIcon}>
+            <Ionicons name={verPassword ? "eye-off" : "eye"} size={20} color="gray" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.checkboxContainer}>
+          <Switch value={aceptarTerminos} onValueChange={setAceptarTerminos} />
+          <Text style={styles.checkboxLabel}>Acepto términos y condiciones</Text>
+        </View>
+
+        <TouchableOpacity style={styles.loginButton} onPress={mostrarAlerta}>
           <Text style={styles.loginButtonText}>REGISTRARTE</Text>
         </TouchableOpacity>
       </View>
@@ -109,7 +117,6 @@ export default function Registro({ navigation }) {
   );
 }
 
-// ... (STYLES IGUALES)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -117,14 +124,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   title: {
     color: "#2C3E50",
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 30,
   },
-
   loginBox: {
     backgroundColor: "#46617A",
     borderRadius: 20,
@@ -132,44 +137,57 @@ const styles = StyleSheet.create({
     width: "88%",
     alignItems: "center",
   },
-
-  welcomeText: {
-    color: "#FFFFFF",
+  toggleButtons: {
+    flexDirection: "row",
     marginBottom: 12,
-    fontSize: 14,
-    textAlign: "center",
-  },
-
-  label: {
-    color: "#FFFFFF",
-    alignSelf: "flex-start",
-    fontSize: 12,
-    marginBottom: 5,
-  },
-
-  input: {
-    borderBottomColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    color: "#FFFFFF",
     width: "100%",
-    marginBottom: 12,
-    paddingVertical: 6,
   },
-
+  smallButton: {
+    flex: 1,
+    paddingVertical: 8,
+    backgroundColor: "#A8C7E5",
+    borderRadius: 18,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  activeButton: {
+    backgroundColor: "#B7D3EB",
+  },
+  smallButtonText: {
+    color: "#2C3E50",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+    height: 45,
+    width: "100%",
+  },
+  input: {
+    flex: 1,
+    color: "#000",
+    height: "100%",
+  },
+  eyeIcon: {
+    paddingLeft: 10,
+  },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
     width: "100%",
   },
-
   checkboxLabel: {
     color: "#FFFFFF",
     fontSize: 12,
     marginLeft: 8,
     flex: 1,
   },
-
   loginButton: {
     backgroundColor: "#A8C7E5",
     paddingVertical: 12,
@@ -177,7 +195,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: "100%",
   },
-
   loginButtonText: {
     textAlign: "center",
     color: "#2C3E50",

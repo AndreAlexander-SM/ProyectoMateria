@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Image, StatusBar } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { UsuarioController } from "../controllers/UsuarioController";
 import { TransaccionController } from "../controllers/TransaccionController";
 import { ApartadoController } from "../controllers/ApartadoController";
@@ -24,12 +25,11 @@ export default function Menu({ navigation }) {
   const apartadoCtrl = new ApartadoController();
 
   const [nombre, setNombre] = useState("Usuario");
-
   const [finanzas, setFinanzas] = useState({
     ingresos: 0,
     gastos: 0,
     ahorros: 0,
-    disponible: 0
+    disponible: 0,
   });
 
   useFocusEffect(
@@ -54,7 +54,7 @@ export default function Menu({ navigation }) {
       ingresos: balanceTrans.ingresos,
       gastos: balanceTrans.gastos,
       ahorros: totalAhorrado,
-      disponible: dineroNeto
+      disponible: dineroNeto,
     });
   };
 
@@ -81,11 +81,11 @@ export default function Menu({ navigation }) {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.monthContainer}>
-          <Text style={styles.Text}>Ahorra+ APP</Text>
-        </TouchableOpacity>
+        <Text style={styles.Text}>Ahorra+ APP</Text>
 
-        <View style={{ width: 24 }} />
+        <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.navigate("Perfil")}>
+          <Ionicons name="person-circle-outline" size={32} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.accountSelector}>
@@ -106,7 +106,7 @@ export default function Menu({ navigation }) {
             <Text
               style={[
                 styles.balanceAmount,
-                { color: finanzas.disponible >= 0 ? "#222" : "#FF3B30" }
+                { color: finanzas.disponible >= 0 ? "#222" : "#FF3B30" },
               ]}
             >
               {formatoMoneda(finanzas.disponible)}
@@ -161,7 +161,7 @@ export default function Menu({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContent: { paddingHorizontal: 20, paddingBottom: 20, borderRadius: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
 
   header: {
     flexDirection: "row",
@@ -170,20 +170,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#46617A",
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 15
+    paddingBottom: 15,
   },
 
   headerIconImage: { width: 24, height: 24, tintColor: "#fff" },
   headerBtn: { padding: 5 },
-  monthContainer: { flexDirection: "row", alignItems: "center" },
   Text: { fontSize: 20, color: "#fff", fontWeight: "bold" },
 
   accountSelector: {
     backgroundColor: "#46617A",
-    paddingHorizontal: 20,
     paddingBottom: 20,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   accountTabActiveCentered: {
@@ -191,24 +189,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 30,
-    minWidth: 150,
-    alignSelf: "center"
   },
 
   accountTabTextActive: {
     color: "#31356E",
     fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 16
+    fontSize: 16,
   },
 
   subTabsCentered: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 15,
-    marginBottom: 20,
-    paddingHorizontal: 20,
-    borderRadius: 20
+    alignItems: "center",
+    marginVertical: 20,
   },
 
   subTabActiveCenteredText: {
@@ -218,10 +209,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderColor: "#31356E",
     paddingBottom: 5,
-    textAlign: "center"
   },
 
-  balanceContainer: { marginBottom: 20, paddingHorizontal: 0 },
+  balanceContainer: { marginBottom: 20 },
   balanceLabel: { fontSize: 14, color: "#888", marginBottom: 5 },
   balanceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   balanceAmount: { fontSize: 36, fontWeight: "bold", color: "#222" },
@@ -232,10 +222,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
 
-  balanceAddText: { color: "#fff", fontSize: 24, lineHeight: 30, fontWeight: "300" },
+  balanceAddText: { color: "#fff", fontSize: 24 },
 
   card: {
     flexDirection: "row",
@@ -244,27 +234,19 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginVertical: 8,
-    marginHorizontal: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 2
   },
 
   cardContent: { flexDirection: "row", alignItems: "center" },
-  cardIcon: { fontSize: 24, marginRight: 15, width: 30, textAlign: "center" },
+  cardIcon: { fontSize: 24, marginRight: 15 },
   cardLabel: { fontSize: 16, color: "#555", fontWeight: "600" },
-  cardAmount: { fontSize: 24, fontWeight: "bold", marginTop: 2 },
-  cardArrow: { fontSize: 20, color: "#999", fontWeight: "300" },
+  cardAmount: { fontSize: 24, fontWeight: "bold" },
+  cardArrow: { fontSize: 20, color: "#999" },
 
   budgetsTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#222",
-    marginTop: 20,
-    marginBottom: 10,
-    paddingHorizontal: 20
+    marginVertical: 15,
   },
 
   budgetsAddButton: {
@@ -276,12 +258,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#eee",
-    marginHorizontal: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    elevation: 1
   },
 
   budgetsAddText: { fontSize: 16, color: "#222" },
@@ -294,6 +270,5 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     color: "#fff",
     fontSize: 20,
-    fontWeight: "300"
-  }
+  },
 });
