@@ -1,18 +1,21 @@
 import React, { useState, useCallback } from "react";
-import {View,Text,TouchableOpacity,StyleSheet,ScrollView,SafeAreaView, Image, Alert} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Image, Alert, Platform, StatusBar } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
+import { Picker } from '@react-native-picker/picker'; 
 import { TransaccionController } from "../controllers/TransaccionController";
 import { UsuarioController } from "../controllers/UsuarioController";
 
 export default function Transacciones({ onNext, onEdit, navigation }) {
-  const [activeTab, setActiveTab] = useState("fecha");
+  // --- ESTADOS DE FILTRO ---
+  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  
   const [listaTransacciones, setListaTransacciones] = useState([]);
 
   const transCtrl = new TransaccionController();
   const userCtrl = new UsuarioController();
-
 
   const cargarDatos = async () => {
     const user = await userCtrl.getUsuarioActivo();
@@ -46,9 +49,41 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
     );
   };
 
+  // --- LÓGICA DE FILTRADO Y LIMPIEZA DE DATOS ---
+  
+  // 1. Obtener listas únicas (CORREGIDO: Se filtran los nulos/undefined/vacíos)
   const uniqueCategories = [
-    ...new Set(listaTransacciones.map((item) => item.categoria))
+    ...new Set(
+        listaTransacciones
+        .map((item) => item.categoria)
+        .filter(c => c !== null && c !== undefined && c !== "") // Filtro anti-null
+    )
   ];
+
+  const uniqueFechas = [
+    ...new Set(
+        listaTransacciones
+        .map((item) => item.fecha)
+        .filter(f => f !== null && f !== undefined && f !== "") // Filtro anti-null
+    )
+  ];
+
+  // 2. Función de filtrado real
+  const obtenerDatosFiltrados = () => {
+    return listaTransacciones.filter(item => {
+      const coincideFecha = filtroFecha ? item.fecha === filtroFecha : true;
+      const coincideCategoria = filtroCategoria ? item.categoria === filtroCategoria : true;
+      return coincideFecha && coincideCategoria;
+    });
+  };
+
+  const datosVisibles = obtenerDatosFiltrados();
+
+  // 3. Limpiar filtros
+  const limpiarFiltros = () => {
+    setFiltroFecha("");
+    setFiltroCategoria("");
+  };
 
   const renderCard = (item, index) => (
     <View key={item.id || index} style={styles.card}>
@@ -67,11 +102,15 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
             item.tipo === "gasto" ? styles.textRed : styles.textBlack
           ]}
         >
-          ${item.monto.toFixed(2)}
+          ${typeof item.monto === 'number' ? item.monto.toFixed(2) : item.monto}
         </Text>
 
-        <Text style={styles.conceptoText}>{item.categoria}</Text>
-        <Text style={styles.fechaDetailText}>{item.fecha}</Text>
+        <Text style={styles.conceptoText}>
+            {item.categoria ? item.categoria : "Sin categoría"}
+        </Text>
+        <Text style={styles.fechaDetailText}>
+            {item.fecha ? item.fecha : "--/--/--"}
+        </Text>
 
         {item.descripcion ? (
           <Text style={{ fontSize: 10, color: "#888" }}>
@@ -101,6 +140,7 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
 
   return (
     <SafeAreaView style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#46607C" />
       <View style={styles.headerContainer}>
         <View style={styles.headerTop}>
           <TouchableOpacity
@@ -125,68 +165,73 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
       </View>
 
       <View style={styles.bodyContainer}>
-        <Text style={styles.subHeaderTitle}>Vistas</Text>
+        
+        {/* --- SECCIÓN DE FILTROS --- */}
+        <View style={styles.filtersWrapper}>
+            {/* Cabecera del filtro con botón de limpiar */}
+            <View style={styles.filterHeader}>
+                <Text style={styles.filterSectionTitle}>Filtrar por:</Text>
+                
+                {(filtroFecha !== "" || filtroCategoria !== "") && (
+                    <TouchableOpacity onPress={limpiarFiltros} style={styles.clearFilterButton}>
+                        <Text style={styles.clearFilterText}>Limpiar filtros ✕</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
 
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[
-              styles.tabItem,
-              activeTab === "fecha" && styles.activeTabBorder
-            ]}
-            onPress={() => setActiveTab("fecha")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "fecha" && styles.activeTabText
-              ]}
-            >
-              Fecha
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.filtersRow}>
+                {/* Filtro Fecha */}
+                <View style={styles.smallPickerContainer}>
+                    <Picker
+                        selectedValue={filtroFecha}
+                        onValueChange={(val) => setFiltroFecha(val)}
+                        style={styles.pickerStyle}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Todas las Fechas" value="" color="#46607C" />
+                        {uniqueFechas.map((fecha, i) => (
+                             <Picker.Item key={i} label={String(fecha)} value={fecha} />
+                        ))}
+                    </Picker>
+                </View>
 
-          <TouchableOpacity
-            style={[
-              styles.tabItem,
-              activeTab === "categoria" && styles.activeTabBorder
-            ]}
-            onPress={() => setActiveTab("categoria")}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === "categoria" && styles.activeTabText
-              ]}
-            >
-              Categoría
+                {/* Filtro Categoría */}
+                <View style={styles.smallPickerContainer}>
+                    <Picker
+                        selectedValue={filtroCategoria}
+                        onValueChange={(val) => setFiltroCategoria(val)}
+                        style={styles.pickerStyle}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Todas las Categorías" value="" color="#46607C" />
+                        {uniqueCategories.map((cat, i) => (
+                             <Picker.Item key={i} label={String(cat)} value={cat} />
+                        ))}
+                    </Picker>
+                </View>
+            </View>
+            
+            <Text style={styles.resultsText}>
+                Mostrando {datosVisibles.length} resultado(s)
             </Text>
-          </TouchableOpacity>
         </View>
+        {/* --------------------------- */}
 
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 60 }}
         >
-          {activeTab === "categoria"
-            ? uniqueCategories.map((cat, idx) => {
-                const items = listaTransacciones.filter(
-                  (t) => t.categoria === cat
-                );
-
-                return (
-                  <View key={idx}>
-                    <View style={styles.categoryPill}>
-                      <Text style={styles.categoryPillText}>{cat}</Text>
-                    </View>
-
-                    {items.map((item) => renderCard(item))}
-                  </View>
-                );
-              })
-            : listaTransacciones.map((item, index) =>
-                renderCard(item, index)
-              )}
+          {datosVisibles.length === 0 ? (
+             <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No hay transacciones con estos filtros.</Text>
+                <TouchableOpacity onPress={limpiarFiltros}>
+                    <Text style={styles.emptyLink}>Ver todas</Text>
+                </TouchableOpacity>
+            </View>
+          ) : (
+            datosVisibles.map((item, index) => renderCard(item, index))
+          )}
         </ScrollView>
 
         <LinearGradient
@@ -204,100 +249,110 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white"
   },
-
   headerContainer: {
     backgroundColor: "#46607C",
-    paddingTop: 50,
+    paddingTop: Platform.OS === 'android' ? 50 : 20, 
     paddingBottom: 20,
-    height: 120
+    height: 120,
+    justifyContent: 'center'
   },
-
   headerTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20
   },
-
   headerTitle: {
     fontSize: 25,
     fontWeight: "bold",
     color: "white"
   },
-
   backIcon: {
     width: 30,
     height: 30,
     tintColor: "#fff",
     resizeMode: "contain"
   },
-
   plusIconHeader: {
     width: 30,
     height: 30,
     tintColor: "#fff",
     resizeMode: "contain"
   },
-
   bodyContainer: {
     flex: 1,
     paddingHorizontal: 20,
     marginTop: 10
   },
-
-  subHeaderTitle: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 15
+  
+  // --- ESTILOS FILTROS ---
+  filtersWrapper: {
+    width: "100%",
+    marginTop: 5,
+    marginBottom: 15,
   },
-
-  tabRow: {
+  filterHeader: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginBottom: 5,
+    paddingHorizontal: 2,
+  },
+  filterSectionTitle: {
+    fontSize: 14,
+    color: "#46607C",
+    fontWeight: 'bold',
+  },
+  clearFilterButton: {
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+  },
+  clearFilterText: {
+    fontSize: 12,
+    color: "#FF3B30", 
+    fontWeight: '600',
+  },
+  filtersRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 15
+    justifyContent: "space-between",
+    gap: 10,
   },
-
-  tabItem: {
-    paddingBottom: 5,
-    minWidth: 80,
-    alignItems: "center"
+  smallPickerContainer: {
+    flex: 1,
+    backgroundColor: "#E8F0F5",
+    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
-
-  activeTabBorder: {
-    borderBottomWidth: 3,
-    borderBottomColor: "#46607C"
+  pickerStyle: {
+    width: '100%',
   },
-
-  tabText: {
+  resultsText: {
+    fontSize: 12,
+    color: "#7f8c8d",
+    marginTop: 5,
+    textAlign: "right",
+    marginRight: 5,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  emptyText: {
+    color: '#999',
     fontSize: 16,
-    color: "#666"
   },
-
-  activeTabText: {
-    color: "#000",
-    fontWeight: "600"
+  emptyLink: {
+    color: '#46607C',
+    fontWeight: 'bold',
+    marginTop: 5,
   },
+  // ----------------------
 
   scrollView: {
     width: "100%"
   },
-
-  categoryPill: {
-    backgroundColor: "#46617A",
-    paddingVertical: 5,
-    paddingHorizontal: 25,
-    borderRadius: 20,
-    alignSelf: "center",
-    marginVertical: 10
-  },
-
-  categoryPillText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 14
-  },
-
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -308,58 +363,47 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10
   },
-
   iconContainer: {
     marginRight: 10
   },
-
   infoContainer: {
     flex: 1
   },
-
   montoText: {
     fontSize: 18,
     fontWeight: "bold"
   },
-
   textRed: {
     color: "#ff3b30"
   },
-
   textBlack: {
     color: "#333"
   },
-
   conceptoText: {
     fontSize: 13,
     color: "#333",
     fontWeight: "500"
   },
-
   fechaDetailText: {
     fontSize: 10,
     color: "#666",
     marginTop: 2
   },
-
   actionsContainer: {
     flexDirection: "row",
     gap: 8
   },
-
   btnEditar: {
     backgroundColor: "#ffab00",
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 15
   },
-
   btnTextSmall: {
     color: "white",
     fontSize: 10,
     fontWeight: "bold"
   },
-
   gradientFade: {
     position: "absolute",
     left: 0,

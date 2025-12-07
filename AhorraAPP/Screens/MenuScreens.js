@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#46617A",
+    backgroundColor: "#46607C",
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 15,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   Text: { fontSize: 20, color: "#fff", fontWeight: "bold" },
 
   accountSelector: {
-    backgroundColor: "#46617A",
+    backgroundColor: "#46607C",
     paddingBottom: 20,
     justifyContent: "center",
     alignItems: "center",

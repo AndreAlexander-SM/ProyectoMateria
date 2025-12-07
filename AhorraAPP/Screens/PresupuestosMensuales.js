@@ -4,10 +4,9 @@ import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView, Platform, 
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
 
-
 export default function PresupuestosMensuales({ navigation }) {
-  const [screen, setScreen] = useState("apartados");
-  const [tabSeleccionado, setTabSeleccionado] = useState("General");
+  const [filtroMes, setFiltroMes] = useState(""); 
+  const [filtroCategoria, setFiltroCategoria] = useState(""); 
 
   // --- DATOS INICIALES ---
   const [listaApartados, setListaApartados] = useState([
@@ -38,43 +37,29 @@ export default function PresupuestosMensuales({ navigation }) {
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
 
-  const categorias = ["Hogar", "Familia", "Despensa", "personal"];
+  const categorias = ["Hogar", "Familia", "Despensa", "Personal"];
 
-  // --- LÓGICA DE AGRUPACIÓN POR MES ---
-  const obtenerDatosAgrupadosPorMes = () => {
-    const mesesPresentes = [...new Set(listaApartados.map(item => item.mes))];
-    const agrupados = mesesPresentes.map(mes => {
-      return {
-        titulo: mes,
-        items: listaApartados.filter(item => item.mes === mes)
-      };
+  // --- LÓGICA DE FILTRADO ---
+  const obtenerDatosFiltrados = () => {
+    return listaApartados.filter(item => {
+      const coincideMes = filtroMes ? item.mes === filtroMes : true;
+      const coincideCategoria = filtroCategoria ? item.categoria === filtroCategoria : true;
+      return coincideMes && coincideCategoria;
     });
-    agrupados.sort((a, b) => meses.indexOf(a.titulo) - meses.indexOf(b.titulo));
-    return agrupados;
   };
 
-  // --- LÓGICA DE AGRUPACIÓN POR CATEGORÍA ---
-  const obtenerDatosPorCategoria = () => {
-    const categoriasPresentes = [...new Set(listaApartados.map(item => item.categoria))];
-    const agrupados = categoriasPresentes.map(cat => {
-        return {
-            titulo: cat,
-            items: listaApartados.filter(item => item.categoria === cat)
-        };
-    });
-    return agrupados;
+  const datosVisibles = obtenerDatosFiltrados();
+
+  // --- NUEVA FUNCIÓN: LIMPIAR FILTROS ---
+  const limpiarFiltros = () => {
+    setFiltroMes("");
+    setFiltroCategoria("");
   };
 
-  // --- CREAR (CON VALIDACIÓN) ---
+  // --- CREAR ---
   const handleApartar = () => {
     if(!nuevoNombre.trim() || !nuevoMonto || !nuevoMes || !nuevaCategoria) {
         Alert.alert("Campos incompletos", "Por favor completa todos los campos.");
-        return; 
-    }
-
-    const presupuestoExcedido = false; 
-    if (presupuestoExcedido) {
-        Alert.alert("Presupuesto Superado", "El monto supera tu presupuesto disponible.");
         return; 
     }
 
@@ -124,7 +109,7 @@ export default function PresupuestosMensuales({ navigation }) {
     setModalEditarVisible(false);
   };
 
-  // --- ELIMINAR (NUEVO) ---
+  // --- ELIMINAR ---
   const confirmarEliminacion = (id) => {
     Alert.alert(
       "Eliminar Apartado",
@@ -149,12 +134,10 @@ export default function PresupuestosMensuales({ navigation }) {
       <View style={styles.textContainer}>
         <Text style={styles.itemTitle}>{item.nombre}</Text>
         <Text style={styles.itemAmount}>{item.monto}</Text>
-        
-        {tabSeleccionado !== "General" && (
-            <Text style={{ fontSize: 10, color: '#7f8c8d' }}>
-                {tabSeleccionado === "Categorias" ? item.categoria : item.mes}
-            </Text>
-        )}
+        <View style={{flexDirection: 'row', gap: 5}}>
+            <Text style={styles.badgeInfo}>{item.mes}</Text>
+            <Text style={styles.badgeInfo}>{item.categoria}</Text>
+        </View>
       </View>
 
       <View style={styles.buttonsContainer}>
@@ -165,7 +148,6 @@ export default function PresupuestosMensuales({ navigation }) {
           <Text style={styles.buttonText}>Editar</Text>
         </TouchableOpacity>
 
-        {/* AQUÍ SE MODIFICÓ EL BOTÓN DE ELIMINAR */}
         <TouchableOpacity 
             style={styles.deleteButton}
             onPress={() => confirmarEliminacion(item.id)}
@@ -203,25 +185,50 @@ export default function PresupuestosMensuales({ navigation }) {
       {/* Cuerpo */}
       <View style={styles.bodyContainer}>
         
-        {/* Tabs */}
-        <View style={styles.categoryContainer}>
-          <Text style={styles.categoryLabel}>Vistas</Text> 
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity style={styles.tabItem} onPress={() => setTabSeleccionado("General")}>
-              <Text style={tabSeleccionado === "General" ? styles.activeTabText : styles.inactiveTabText}>General</Text>
-              {tabSeleccionado === "General" && <View style={styles.underline} />}
-            </TouchableOpacity>
+        {/* --- SECCIÓN DE FILTROS --- */}
+        <View style={styles.filtersWrapper}>
+            {/* Cabecera del filtro con botón de limpiar */}
+            <View style={styles.filterHeader}>
+                <Text style={styles.filterSectionTitle}>Filtrar por:</Text>
+                
+                {(filtroMes !== "" || filtroCategoria !== "") && (
+                    <TouchableOpacity onPress={limpiarFiltros} style={styles.clearFilterButton}>
+                        <Text style={styles.clearFilterText}>Limpiar filtros ✕</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
 
-             <TouchableOpacity style={styles.tabItem} onPress={() => setTabSeleccionado("Categorias")}>
-              <Text style={tabSeleccionado === "Categorias" ? styles.activeTabText : styles.inactiveTabText}>Categorías</Text>
-              {tabSeleccionado === "Categorias" && <View style={styles.underline} />}
-            </TouchableOpacity>
+            <View style={styles.filtersRow}>
+                {/* Filtro Fecha (Mes) */}
+                <View style={styles.smallPickerContainer}>
+                    <Picker
+                        selectedValue={filtroMes}
+                        onValueChange={(val) => setFiltroMes(val)}
+                        style={styles.pickerStyle}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Todos los Meses" value="" color="#46607C" />
+                        {meses.map((m, i) => <Picker.Item key={i} label={m} value={m} />)}
+                    </Picker>
+                </View>
+
+                {/* Filtro Categoría */}
+                <View style={styles.smallPickerContainer}>
+                    <Picker
+                        selectedValue={filtroCategoria}
+                        onValueChange={(val) => setFiltroCategoria(val)}
+                        style={styles.pickerStyle}
+                        mode="dropdown"
+                    >
+                        <Picker.Item label="Todas las Categorías" value="" color="#46607C" />
+                        {categorias.map((c, i) => <Picker.Item key={i} label={c} value={c} />)}
+                    </Picker>
+                </View>
+            </View>
             
-            <TouchableOpacity style={styles.tabItem} onPress={() => setTabSeleccionado("Mes")}>
-              <Text style={tabSeleccionado === "Mes" ? styles.activeTabText : styles.inactiveTabText}>Mes</Text>
-              {tabSeleccionado === "Mes" && <View style={styles.underline} />}
-            </TouchableOpacity>
-          </View>
+            <Text style={styles.resultsText}>
+                Mostrando {datosVisibles.length} resultado(s)
+            </Text>
         </View>
 
         {/* Lista */}
@@ -231,30 +238,15 @@ export default function PresupuestosMensuales({ navigation }) {
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
-              {tabSeleccionado === "General" && (
-                 listaApartados.map((item) => renderCard(item))
-              )}
-
-              {tabSeleccionado === "Categorias" && (
-                 obtenerDatosPorCategoria().map((grupo, groupIndex) => (
-                    <View key={groupIndex} style={styles.monthGroupContainer}>
-                      <View style={styles.monthLabelContainer}>
-                        <Text style={styles.monthLabelText}>{grupo.titulo || "Sin Categoría"}</Text>
-                      </View>
-                      {grupo.items.map((item) => renderCard(item))}
-                    </View>
-                 ))
-              )}
-
-              {tabSeleccionado === "Mes" && (
-                 obtenerDatosAgrupadosPorMes().map((grupo, groupIndex) => (
-                    <View key={groupIndex} style={styles.monthGroupContainer}>
-                      <View style={styles.monthLabelContainer}>
-                        <Text style={styles.monthLabelText}>{grupo.titulo || "Sin Mes"}</Text>
-                      </View>
-                      {grupo.items.map((item) => renderCard(item))}
-                    </View>
-                 ))
+              {datosVisibles.length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>No hay resultados.</Text>
+                      <TouchableOpacity onPress={limpiarFiltros}>
+                          <Text style={styles.emptyLink}>Ver todos</Text>
+                      </TouchableOpacity>
+                  </View>
+              ) : (
+                  datosVisibles.map((item) => renderCard(item))
               )}
             </ScrollView>
 
@@ -494,45 +486,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  categoryContainer: {
-    width: "100%",
-    alignItems: "center",
+  // --- ESTILOS FILTROS ---
+  filtersWrapper: {
+    width: "90%",
     marginTop: 15,
-    marginBottom: 10,
+    marginBottom: 5,
   },
-  categoryLabel: {
-    fontSize: 16,
-    color: "#000",
-    marginBottom: 10,
-    fontWeight: '400',
+  filterHeader: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginBottom: 5,
+    paddingHorizontal: 2,
   },
-  tabsContainer: {
+  filterSectionTitle: {
+    fontSize: 14,
+    color: "#46607C",
+    fontWeight: 'bold',
+  },
+  clearFilterButton: {
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+  },
+  clearFilterText: {
+    fontSize: 12,
+    color: "#FF3B30", 
+    fontWeight: '600',
+  },
+  filtersRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "90%", 
+    gap: 10,
   },
-  tabItem: {
-    alignItems: "center",
-    paddingBottom: 5,
-    width: 100, 
+  smallPickerContainer: {
+    flex: 1,
+    backgroundColor: "#E8F0F5",
+    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  activeTabText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2C3E50",
+  resultsText: {
+    fontSize: 12,
+    color: "#7f8c8d",
+    marginTop: 5,
+    textAlign: "right",
+    marginRight: 5,
   },
-  inactiveTabText: {
-    fontSize: 16,
-    color: "#000",
-    fontWeight: "400",
-  },
-  underline: {
-    height: 3,
-    backgroundColor: "#46617A",
-    width: "100%",
-    marginTop: 2,
-    borderRadius: 2,
-  },
+  // ----------------------
   listWrapper: {
     flex: 1,
     width: "100%",
@@ -547,6 +548,19 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 40,
   },
+  emptyContainer: {
+      alignItems: 'center',
+      marginTop: 30,
+  },
+  emptyText: {
+      color: '#999',
+      fontSize: 16,
+  },
+  emptyLink: {
+      color: '#46607C',
+      fontWeight: 'bold',
+      marginTop: 5,
+  },
   bottomGradient: {
     position: 'absolute',
     left: 0,
@@ -554,23 +568,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 60,
     zIndex: 1,
-  },
-  monthGroupContainer: {
-    marginBottom: 10,
-  },
-  monthLabelContainer: {
-    backgroundColor: "#576F89",
-    alignSelf: "center",
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginBottom: 15,
-    marginTop: 5,
-  },
-  monthLabelText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
   },
   card: {
     backgroundColor: "#E8F0F5",
@@ -598,6 +595,16 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "600",
     marginTop: 2,
+    marginBottom: 4,
+  },
+  badgeInfo: {
+      fontSize: 10,
+      color: '#fff',
+      backgroundColor: '#95a5a6',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      overflow: 'hidden',
   },
   buttonsContainer: {
     flexDirection: "row",
