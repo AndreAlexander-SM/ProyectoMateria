@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Image, StatusBar } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, ScrollView, Image, StatusBar, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { UsuarioController } from "../controllers/UsuarioController";
@@ -67,13 +67,26 @@ export default function Menu({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor="#46617A" />
 
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerBtn}
-          onPress={() => {
+       <TouchableOpacity
+  style={styles.headerBtn}
+  onPress={() => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Estás segur@ de que quieres cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sí, cerrar sesión",
+          onPress: () => {
             userCtrl.cerrarSesion();
             navigation.replace("InicioSesion");
-          }}
-        >
+          },
+        },
+      ]
+    );
+  }}
+>
+
           <Image
             style={styles.headerIconImage}
             source={require("../assets/cerrarSesion.png")}
