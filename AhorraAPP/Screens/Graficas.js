@@ -17,7 +17,7 @@ import { UsuarioController } from "../controllers/UsuarioController";
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Graficas({ navigation }) {
-  const [graficaActiva, setGraficaActiva] = useState("ingresosVsEgresos");
+  const [graficaActiva, setGraficaActiva] = useState("pastel");
   const [datos, setDatos] = useState({
     totalGastos: 0,
     totalIngresos: 0,
@@ -52,43 +52,27 @@ export default function Graficas({ navigation }) {
   };
 
   const procesarTransaccionesMensuales = (transacciones) => {
-    console.log("=== INICIANDO PROCESAMIENTO MENSUAL ===");
-    console.log("Total transacciones:", transacciones.length);
-    
     const transaccionesPorMes = {};
-    let transaccionesProcesadas = 0;
-    let transaccionesConError = 0;
     
-    transacciones.forEach((t, index) => {
+    transacciones.forEach((t) => {
       try {
-        // Verificar que la transacción tenga datos básicos
-        if (!t || typeof t !== 'object') {
-          transaccionesConError++;
-          return;
-        }
+        if (!t || typeof t !== 'object') return;
         
-        // Obtener fecha - manejar diferentes casos
         let fechaTransaccion = t.fecha;
         
-        // Si no hay fecha, usar fecha actual
         if (!fechaTransaccion) {
           fechaTransaccion = new Date().toISOString().split('T')[0];
         }
         
-        // Convertir a string
         const fechaStr = String(fechaTransaccion).trim();
         
-        // Extraer año y mes
         let year, month;
         
-        // Buscar patrón YYYY-MM-DD o YYYY-MM
         const match1 = fechaStr.match(/(\d{4})[-\/](\d{1,2})/);
         if (match1) {
           year = match1[1];
           month = match1[2];
-        }
-        // Buscar patrón DD/MM/YYYY
-        else if (fechaStr.includes('/')) {
+        } else if (fechaStr.includes('/')) {
           const parts = fechaStr.split('/');
           if (parts.length >= 3) {
             year = parts[2];
@@ -96,18 +80,15 @@ export default function Graficas({ navigation }) {
           }
         }
         
-        // Si no se pudo extraer, usar fecha actual
         if (!year || !month) {
           const now = new Date();
           year = now.getFullYear().toString();
           month = (now.getMonth() + 1).toString();
         }
         
-        // Formatear mes a 2 dígitos
         const mesFormateado = month.padStart(2, '0');
         const mesKey = `${year}-${mesFormateado}`;
         
-        // Inicializar mes si no existe
         if (!transaccionesPorMes[mesKey]) {
           transaccionesPorMes[mesKey] = {
             gastos: 0,
@@ -116,34 +97,23 @@ export default function Graficas({ navigation }) {
           };
         }
         
-        // Obtener monto
         const monto = Math.abs(parseFloat(t.monto)) || 0;
         
-        // Sumar según tipo
         if (t.tipo === "gasto") {
           transaccionesPorMes[mesKey].gastos += monto;
         } else if (t.tipo === "ingreso") {
           transaccionesPorMes[mesKey].ingresos += monto;
         }
         
-        // Calcular balance
         transaccionesPorMes[mesKey].balance = 
           transaccionesPorMes[mesKey].ingresos - transaccionesPorMes[mesKey].gastos;
         
-        transaccionesProcesadas++;
-        
       } catch (error) {
-        console.error(`Error en transacción ${index}:`, error);
-        transaccionesConError++;
+        console.error("Error procesando transacción:", error);
       }
     });
     
-    console.log("Transacciones procesadas:", transaccionesProcesadas);
-    console.log("Transacciones con error:", transaccionesConError);
-    console.log("Meses encontrados:", Object.keys(transaccionesPorMes));
-    
-    // Convertir a array y ordenar
-    const resultado = Object.entries(transaccionesPorMes)
+    return Object.entries(transaccionesPorMes)
       .map(([mes, datos]) => ({ 
         mes, 
         gastos: datos.gastos || 0, 
@@ -152,10 +122,6 @@ export default function Graficas({ navigation }) {
       }))
       .sort((a, b) => b.mes.localeCompare(a.mes))
       .slice(0, 6);
-    
-    console.log("Resultado final (primeros 3):", resultado.slice(0, 3));
-    
-    return resultado;
   };
 
   useFocusEffect(
@@ -169,22 +135,8 @@ export default function Graficas({ navigation }) {
             : { id: 1 };
           const usuarioId = usuario.id || 1;
 
-          // Obtener todas las transacciones
           const transacciones = await transCtrl.obtenerTodas(usuarioId);
           
-          console.log("=== CARGANDO DATOS ===");
-          console.log("Usuario ID:", usuarioId);
-          console.log("Total transacciones BD:", transacciones.length);
-          
-          // Mostrar estructura de algunas transacciones
-          if (transacciones.length > 0) {
-            console.log("Ejemplo de transacciones:");
-            transacciones.slice(0, 3).forEach((t, i) => {
-              console.log(`${i + 1}. ID: ${t.id}, Tipo: ${t.tipo}, Monto: ${t.monto}, Fecha: ${t.fecha}, Categoría: ${t.categoria}`);
-            });
-          }
-          
-          // Procesar datos para gráficas
           const gastosPorCategoria = {};
           const ingresosPorCategoria = {};
           let totalGastos = 0;
@@ -207,13 +159,14 @@ export default function Graficas({ navigation }) {
           const balance = totalIngresos - totalGastos;
           const transaccionesMensuales = procesarTransaccionesMensuales(transacciones);
 
-          console.log("=== RESUMEN DATOS ===");
-          console.log("Total Gastos:", totalGastos);
-          console.log("Total Ingresos:", totalIngresos);
-          console.log("Balance:", balance);
-          console.log("Categorías gastos:", Object.keys(gastosPorCategoria).length);
-          console.log("Categorías ingresos:", Object.keys(ingresosPorCategoria).length);
-          console.log("Meses procesados:", transaccionesMensuales.length);
+          // DEBUG: Ver qué datos tenemos
+          console.log("=== DATOS CARGADOS PARA GRÁFICAS ===");
+          console.log("Total ingresos:", totalIngresos);
+          console.log("Total gastos:", totalGastos);
+          console.log("Categorías de ingresos:", Object.keys(ingresosPorCategoria));
+          console.log("Categorías de gastos:", Object.keys(gastosPorCategoria));
+          console.log("Detalle ingresos por categoría:", ingresosPorCategoria);
+          console.log("Detalle gastos por categoría:", gastosPorCategoria);
 
           setDatos({
             totalGastos,
@@ -261,7 +214,345 @@ export default function Graficas({ navigation }) {
     else return "Tus finanzas están perfectamente equilibradas.";
   };
 
-  // 1. Gráfica de Ingresos vs Egresos por Categoría
+  // MODIFICADA: Función que SOLO obtiene categorías con INGRESOS
+  const obtenerCategoriasConIngresos = () => {
+    const { ingresosPorCategoria } = datos;
+    
+    console.log("=== OBTENIENDO CATEGORÍAS CON INGRESOS ===");
+    console.log("Ingresos por categoría:", ingresosPorCategoria);
+    
+    if (Object.keys(ingresosPorCategoria).length === 0) {
+      console.log("No hay categorías con ingresos");
+      return [];
+    }
+
+    const categorias = Object.entries(ingresosPorCategoria)
+      .map(([categoria, monto]) => ({
+        categoria: categoria || "Sin categoría",
+        monto,
+        porcentaje: datos.totalIngresos > 0 ? (monto / datos.totalIngresos) * 100 : 0,
+        tipo: "ingreso"
+      }))
+      .sort((a, b) => b.monto - a.monto);
+    
+    console.log("Categorías con ingresos procesadas:", categorias);
+    
+    return categorias;
+  };
+
+  // MODIFICADA: Función que SOLO obtiene categorías con GASTOS
+  const obtenerCategoriasConGastos = () => {
+    const { gastosPorCategoria } = datos;
+    
+    if (Object.keys(gastosPorCategoria).length === 0) {
+      return [];
+    }
+
+    const categorias = Object.entries(gastosPorCategoria)
+      .map(([categoria, monto]) => ({
+        categoria: categoria || "Sin categoría",
+        monto,
+        porcentaje: datos.totalGastos > 0 ? (monto / datos.totalGastos) * 100 : 0,
+        tipo: "gasto"
+      }))
+      .sort((a, b) => b.monto - a.monto);
+    
+    return categorias;
+  };
+
+  // NUEVA: Función para gráfica de barras que muestra INGRESOS y GASTOS por separado
+  const obtenerDatosParaGraficaBarras = () => {
+    const categoriasIngresos = obtenerCategoriasConIngresos();
+    const categoriasGastos = obtenerCategoriasConGastos();
+    
+    // Tomar las top 3 de cada tipo
+    const topIngresos = categoriasIngresos.slice(0, 3);
+    const topGastos = categoriasGastos.slice(0, 3);
+    
+    // Combinar y ordenar por monto total
+    const todasCategorias = [...topIngresos, ...topGastos]
+      .sort((a, b) => b.monto - a.monto)
+      .slice(0, 6); // Mostrar máximo 6 categorías
+    
+    console.log("=== DATOS PARA GRÁFICA BARRAS ===");
+    console.log("Top ingresos:", topIngresos);
+    console.log("Top gastos:", topGastos);
+    console.log("Todas categorías combinadas:", todasCategorias);
+    
+    return todasCategorias;
+  };
+
+  // FUNCIÓN MEJORADA: Calcula altura con límite máximo
+  const calcularAlturaBarra = (valor, maxValor) => {
+    const alturaMaxima = 80;
+    
+    // Si el valor es muy grande, usar escala logarítmica
+    if (valor > 1000) {
+      return Math.log10(valor + 1) * 25;
+    } else {
+      return (valor / maxValor) * alturaMaxima;
+    }
+  };
+
+  // 1. GRÁFICA PASTEL MODIFICADA: Ingresos y Egresos combinados
+  const renderGraficaPastelSimple = () => {
+    const categoriasIngresos = obtenerCategoriasConIngresos();
+    const categoriasGastos = obtenerCategoriasConGastos();
+    
+    // Combinar y tomar top 6
+    const todasCategorias = [...categoriasIngresos, ...categoriasGastos]
+      .sort((a, b) => b.monto - a.monto)
+      .slice(0, 6);
+
+    if (loading) {
+      return (
+        <View style={styles.graficaContainer}>
+          <Text style={styles.tituloGrafica}>
+            Distribución de Transacciones
+          </Text>
+          <Text style={styles.cargando}>Cargando datos...</Text>
+        </View>
+      );
+    }
+
+    if (todasCategorias.length === 0) {
+      return (
+        <View style={styles.graficaContainer}>
+          <Text style={styles.tituloGrafica}>
+            Distribución de Transacciones por Categoría
+          </Text>
+          <Text style={styles.sinDatos}>
+            No hay transacciones registradas aún
+          </Text>
+        </View>
+      );
+    }
+
+    const totalTransacciones = datos.totalGastos + datos.totalIngresos;
+
+    return (
+      <View style={styles.graficaContainer}>
+        <Text style={styles.tituloGrafica}>
+          Distribución de Transacciones por Categoría
+        </Text>
+
+        <View style={styles.contenidoPastelSimple}>
+          <View style={styles.pastelSimpleVisual}>
+            <View style={styles.circuloAnillos}>
+              {todasCategorias.map((item, index) => {
+                const tamaño = 140 - index * 20;
+                return (
+                  <View
+                    key={item.categoria}
+                    style={[
+                      styles.anilloPastel,
+                      {
+                        width: tamaño,
+                        height: tamaño,
+                        borderRadius: tamaño / 2,
+                        borderWidth: 12,
+                        borderColor: getColor(index),
+                        opacity: 0.8 - index * 0.1,
+                      },
+                    ]}
+                  />
+                );
+              })}
+
+              <View style={styles.centroPastelSimple}>
+                <Text style={styles.totalPastelSimple}>
+                  ${totalTransacciones.toFixed(0)}
+                </Text>
+                <Text style={styles.labelPastelSimple}>Total Transacciones</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.leyendaDetallada}>
+            {todasCategorias.map((item, index) => (
+              <View
+                key={item.categoria}
+                style={styles.filaLeyenda}
+              >
+                <View
+                  style={[
+                    styles.marcadorColor,
+                    { backgroundColor: getColor(index) },
+                  ]}
+                />
+                <View style={styles.infoLeyenda}>
+                  <Text style={styles.nombreCategoria}>
+                    {item.categoria}
+                  </Text>
+                  <Text style={styles.datosCategoria}>
+                    {item.tipo === "ingreso" ? (
+                      <Text style={{color: '#00B894'}}>Ingreso: +${item.monto.toFixed(2)}</Text>
+                    ) : (
+                      <Text style={{color: '#FF6B6B'}}>Gasto: -${item.monto.toFixed(2)}</Text>
+                    )}
+                    {" "}• {item.porcentaje.toFixed(1)}%
+                  </Text>
+                </View>
+                <View
+                  style={styles.barraPorcentajeContainer}
+                >
+                  <View
+                    style={[
+                      styles.barraPorcentaje,
+                      {
+                        width: `${Math.min(
+                          item.porcentaje,
+                          100
+                        )}%`,
+                        backgroundColor: getColor(index),
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+        
+        <View style={styles.resumenPastel}>
+          <View style={styles.resumenItem}>
+            <Text style={styles.resumenLabel}>Ingresos totales:</Text>
+            <Text style={[styles.resumenValue, { color: '#00B894' }]}>
+              ${datos.totalIngresos.toFixed(2)}
+            </Text>
+          </View>
+          <View style={styles.resumenItem}>
+            <Text style={styles.resumenLabel}>Gastos totales:</Text>
+            <Text style={[styles.resumenValue, { color: '#FF6B6B' }]}>
+              ${datos.totalGastos.toFixed(2)}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // 2. GRÁFICA BARRAS MODIFICADA: Corregida para mostrar INGRESOS Y GASTOS correctamente
+  const renderGraficaBarras = () => {
+    const datosGrafica = obtenerDatosParaGraficaBarras();
+
+    console.log("=== RENDERIZANDO GRÁFICA BARRAS ===");
+    console.log("Datos para gráfica:", datosGrafica);
+
+    if (loading) {
+      return (
+        <View style={styles.graficaContainer}>
+          <Text style={styles.tituloGrafica}>Transacciones por Categoría</Text>
+          <Text style={styles.cargando}>Cargando datos...</Text>
+        </View>
+      );
+    }
+
+    if (datosGrafica.length === 0) {
+      return (
+        <View style={styles.graficaContainer}>
+          <Text style={styles.tituloGrafica}>Transacciones por Categoría</Text>
+          <Text style={styles.sinDatos}>
+            No hay transacciones registradas aún
+          </Text>
+        </View>
+      );
+    }
+
+    const maxMonto = Math.max(
+      ...datosGrafica.map((item) => item.monto),
+      1
+    );
+
+    return (
+      <View style={styles.graficaContainer}>
+        <Text style={styles.tituloGrafica}>
+          Transacciones por Categoría (Top {Math.min(6, datosGrafica.length)})
+        </Text>
+
+        <View style={styles.contenidoBarras}>
+          <View style={styles.barrasVisualContainer}>
+            {datosGrafica.map((item, index) => {
+              const altura = calcularAlturaBarra(item.monto, maxMonto);
+              const color = item.tipo === "ingreso" ? "#00B894" : "#FF6B6B";
+
+              console.log(`Barra ${index}:`, {
+                categoria: item.categoria,
+                monto: item.monto,
+                tipo: item.tipo,
+                altura: altura,
+                color: color
+              });
+
+              return (
+                <View
+                  key={`${item.categoria}-${index}`}
+                  style={styles.barraGrupo}
+                >
+                  <View style={styles.barraContainer}>
+                    <View
+                      style={[
+                        styles.barra,
+                        {
+                          height: Math.min(Math.max(altura, 4), 80),
+                          backgroundColor: color,
+                          borderTopLeftRadius: 4,
+                          borderTopRightRadius: 4,
+                        },
+                      ]}
+                    />
+                    <Text style={styles.montoBarra}>
+                      ${item.monto > 999 ? `${(item.monto/1000).toFixed(1)}k` : item.monto.toFixed(0)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={styles.labelBarra}
+                    numberOfLines={1}
+                  >
+                    {item.categoria.length > 8
+                      ? item.categoria.substring(0, 8) + "..."
+                      : item.categoria}
+                  </Text>
+                  <Text style={[
+                    styles.tipoCategoria,
+                    { color: item.tipo === "ingreso" ? "#00B894" : "#FF6B6B" }
+                  ]}>
+                    {item.tipo === "ingreso" ? "Ingreso" : "Gasto"}
+                  </Text>
+                  <Text style={styles.porcentajeBarra}>
+                    {item.porcentaje.toFixed(0)}%
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={styles.resumenBarras}>
+            <View style={styles.resumenItem}>
+              <Text style={styles.resumenLabel}>Total Ingresos:</Text>
+              <Text style={[styles.resumenValue, { color: '#00B894' }]}>
+                ${datos.totalIngresos.toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.resumenItem}>
+              <Text style={styles.resumenLabel}>Total Gastos:</Text>
+              <Text style={[styles.resumenValue, { color: '#FF6B6B' }]}>
+                ${datos.totalGastos.toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.resumenItem}>
+              <Text style={styles.resumenLabel}>Categorías:</Text>
+              <Text style={styles.resumenValue}>
+                {datosGrafica.length}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // 3. GRÁFICA INGRESOS VS EGRESOS - Funciona bien
   const renderGraficaIngresosVsEgresos = () => {
     const { gastosPorCategoria, ingresosPorCategoria } = datos;
 
@@ -274,7 +565,6 @@ export default function Graficas({ navigation }) {
       );
     }
 
-    // Combinar todas las categorías de ingresos y egresos
     const todasCategorias = new Set([
       ...Object.keys(gastosPorCategoria),
       ...Object.keys(ingresosPorCategoria)
@@ -285,9 +575,6 @@ export default function Graficas({ navigation }) {
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Ingresos vs Egresos por Categoría</Text>
           <Text style={styles.sinDatos}>No hay transacciones registradas aún</Text>
-          <Text style={styles.infoAyuda}>
-            Agrega transacciones desde la pestaña "Transacciones"
-          </Text>
         </View>
       );
     }
@@ -298,13 +585,12 @@ export default function Graficas({ navigation }) {
       gastos: gastosPorCategoria[categoria] || 0,
       color: getColor(index)
     })).sort((a, b) => (b.ingresos + b.gastos) - (a.ingresos + a.gastos))
-      .slice(0, 8); // Mostrar solo las 8 categorías principales
+      .slice(0, 8);
 
     const maxValor = Math.max(
       ...datosGrafica.map(d => Math.max(d.ingresos, d.gastos)),
       1
     );
-    const alturaMaxima = 120;
 
     return (
       <View style={styles.graficaContainer}>
@@ -323,29 +609,27 @@ export default function Graficas({ navigation }) {
 
         <View style={styles.contenidoComparativa}>
           {datosGrafica.map((item, index) => {
-            const alturaIngresos = (item.ingresos / maxValor) * alturaMaxima;
-            const alturaGastos = (item.gastos / maxValor) * alturaMaxima;
+            const alturaIngresos = calcularAlturaBarra(item.ingresos, maxValor);
+            const alturaGastos = calcularAlturaBarra(item.gastos, maxValor);
 
             return (
               <View key={`${item.categoria}-${index}`} style={styles.grupoBarrasComparativas}>
                 <View style={styles.barrasContainer}>
-                  {/* Barra de ingresos */}
                   <View style={styles.barraWrapper}>
                     <View style={[styles.barraIngreso, { 
-                      height: Math.max(alturaIngresos, 2) 
+                      height: Math.min(Math.max(alturaIngresos, 2), 80)
                     }]} />
                     <Text style={styles.valorBarra}>
-                      {item.ingresos > 0 ? `$${item.ingresos.toFixed(0)}` : ''}
+                      {item.ingresos > 0 ? `$${item.ingresos > 999 ? `${(item.ingresos/1000).toFixed(1)}k` : item.ingresos.toFixed(0)}` : ''}
                     </Text>
                   </View>
                   
-                  {/* Barra de gastos */}
                   <View style={styles.barraWrapper}>
                     <View style={[styles.barraGasto, { 
-                      height: Math.max(alturaGastos, 2) 
+                      height: Math.min(Math.max(alturaGastos, 2), 80)
                     }]} />
                     <Text style={styles.valorBarra}>
-                      {item.gastos > 0 ? `$${item.gastos.toFixed(0)}` : ''}
+                      {item.gastos > 0 ? `$${item.gastos > 999 ? `${(item.gastos/1000).toFixed(1)}k` : item.gastos.toFixed(0)}` : ''}
                     </Text>
                   </View>
                 </View>
@@ -358,10 +642,10 @@ export default function Graficas({ navigation }) {
                 
                 <View style={styles.totalesCategoria}>
                   <Text style={styles.totalIngreso}>
-                    {item.ingresos > 0 ? `+$${item.ingresos.toFixed(0)}` : ''}
+                    {item.ingresos > 0 ? `+$${item.ingresos > 999 ? `${(item.ingresos/1000).toFixed(1)}k` : item.ingresos.toFixed(0)}` : ''}
                   </Text>
                   <Text style={styles.totalGasto}>
-                    {item.gastos > 0 ? `-$${item.gastos.toFixed(0)}` : ''}
+                    {item.gastos > 0 ? `-$${item.gastos > 999 ? `${(item.gastos/1000).toFixed(1)}k` : item.gastos.toFixed(0)}` : ''}
                   </Text>
                 </View>
               </View>
@@ -387,13 +671,9 @@ export default function Graficas({ navigation }) {
     );
   };
 
-  // 2. Gráfica Comparativa Mensual (Gastos vs Ingresos por mes)
+  // 4. GRÁFICA COMPARATIVA MENSUAL
   const renderGraficaComparativaMensual = () => {
     const { transaccionesMensuales, totalGastos, totalIngresos } = datos;
-
-    console.log("=== RENDERIZANDO GRÁFICA MENSUAL ===");
-    console.log("transaccionesMensuales:", transaccionesMensuales);
-    console.log("loading:", loading);
 
     if (loading) {
       return (
@@ -404,7 +684,6 @@ export default function Graficas({ navigation }) {
       );
     }
 
-    // Si no hay datos mensuales pero sí hay transacciones
     if (transaccionesMensuales.length === 0) {
       const tieneTransacciones = totalGastos > 0 || totalIngresos > 0;
       
@@ -420,19 +699,11 @@ export default function Graficas({ navigation }) {
               <Text style={styles.infoAyuda}>
                 Asegúrate de que tus transacciones tengan fechas válidas
               </Text>
-              <Text style={styles.infoDetalle}>
-                Total transacciones: {totalGastos + totalIngresos > 0 ? "Sí hay datos" : "0"}
-              </Text>
             </>
           ) : (
-            <>
-              <Text style={styles.sinDatos}>
-                No hay transacciones registradas
-              </Text>
-              <Text style={styles.infoAyuda}>
-                Agrega transacciones desde la pestaña "Transacciones"
-              </Text>
-            </>
+            <Text style={styles.sinDatos}>
+              No hay transacciones registradas
+            </Text>
           )}
         </View>
       );
@@ -442,7 +713,6 @@ export default function Graficas({ navigation }) {
       ...transaccionesMensuales.map(m => Math.max(m.ingresos, m.gastos)),
       1
     );
-    const alturaMaxima = 120;
 
     return (
       <View style={styles.graficaContainer}>
@@ -461,8 +731,8 @@ export default function Graficas({ navigation }) {
 
         <View style={styles.contenidoMensual}>
           {transaccionesMensuales.map((mesData, index) => {
-            const alturaIngresos = (mesData.ingresos / maxValor) * alturaMaxima;
-            const alturaGastos = (mesData.gastos / maxValor) * alturaMaxima;
+            const alturaIngresos = calcularAlturaBarra(mesData.ingresos, maxValor);
+            const alturaGastos = calcularAlturaBarra(mesData.gastos, maxValor);
             const nombreMes = obtenerNombreMes(mesData.mes);
             const nombreMesCorto = nombreMes.split(' ')[0].substring(0, 3);
             const anio = mesData.mes ? mesData.mes.split('-')[0] : '';
@@ -472,19 +742,19 @@ export default function Graficas({ navigation }) {
                 <View style={styles.barrasMensualesContainer}>
                   <View style={styles.barraMensualWrapper}>
                     <View style={[styles.barraIngreso, { 
-                      height: Math.max(alturaIngresos, 2) 
+                      height: Math.min(Math.max(alturaIngresos, 2), 80)
                     }]} />
                     <Text style={styles.valorBarraMensual}>
-                      {mesData.ingresos > 0 ? `$${mesData.ingresos.toFixed(0)}` : ''}
+                      {mesData.ingresos > 0 ? `$${mesData.ingresos > 999 ? `${(mesData.ingresos/1000).toFixed(1)}k` : mesData.ingresos.toFixed(0)}` : ''}
                     </Text>
                   </View>
                   
                   <View style={styles.barraMensualWrapper}>
                     <View style={[styles.barraGasto, { 
-                      height: Math.max(alturaGastos, 2) 
+                      height: Math.min(Math.max(alturaGastos, 2), 80)
                     }]} />
                     <Text style={styles.valorBarraMensual}>
-                      {mesData.gastos > 0 ? `$${mesData.gastos.toFixed(0)}` : ''}
+                      {mesData.gastos > 0 ? `$${mesData.gastos > 999 ? `${(mesData.gastos/1000).toFixed(1)}k` : mesData.gastos.toFixed(0)}` : ''}
                     </Text>
                   </View>
                 </View>
@@ -501,7 +771,9 @@ export default function Graficas({ navigation }) {
                     styles.textoBalance,
                     { color: mesData.balance >= 0 ? '#00B894' : '#FF6B6B' }
                   ]}>
-                    {mesData.balance >= 0 ? '+' : '-'}${Math.abs(mesData.balance).toFixed(0)}
+                    {mesData.balance >= 0 ? '+' : '-'}${Math.abs(mesData.balance) > 999 
+                      ? `${(Math.abs(mesData.balance)/1000).toFixed(1)}k` 
+                      : Math.abs(mesData.balance).toFixed(0)}
                   </Text>
                 </View>
               </View>
@@ -567,8 +839,47 @@ export default function Graficas({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
       >
         <View style={styles.selectorGraficas}>
+          <TouchableOpacity
+            style={[
+              styles.botonGrafica,
+              graficaActiva === "pastel" &&
+                styles.botonGraficaActivo,
+            ]}
+            onPress={() => setGraficaActiva("pastel")}
+          >
+            <Text
+              style={[
+                styles.textoBotonGrafica,
+                graficaActiva === "pastel" &&
+                  styles.textoBotonGraficaActivo,
+              ]}
+            >
+              Pastel
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.botonGrafica,
+              graficaActiva === "barras" &&
+                styles.botonGraficaActivo,
+            ]}
+            onPress={() => setGraficaActiva("barras")}
+          >
+            <Text
+              style={[
+                styles.textoBotonGrafica,
+                graficaActiva === "barras" &&
+                  styles.textoBotonGraficaActivo,
+              ]}
+            >
+              Barras
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[
               styles.botonGrafica,
@@ -584,7 +895,7 @@ export default function Graficas({ navigation }) {
                   styles.textoBotonGraficaActivo,
               ]}
             >
-              Ingresos vs Egresos
+              Ing vs Eg
             </Text>
           </TouchableOpacity>
 
@@ -603,14 +914,15 @@ export default function Graficas({ navigation }) {
                   styles.textoBotonGraficaActivo,
               ]}
             >
-              Comparativa Mensual
+              Mensual
             </Text>
           </TouchableOpacity>
         </View>
 
-        {graficaActiva === "ingresosVsEgresos"
-          ? renderGraficaIngresosVsEgresos()
-          : renderGraficaComparativaMensual()}
+        {graficaActiva === "pastel" && renderGraficaPastelSimple()}
+        {graficaActiva === "barras" && renderGraficaBarras()}
+        {graficaActiva === "ingresosVsEgresos" && renderGraficaIngresosVsEgresos()}
+        {graficaActiva === "comparativaMensual" && renderGraficaComparativaMensual()}
 
         <View style={styles.resumenContainer}>
           <Text style={styles.tituloResumen}>Resumen General</Text>
@@ -675,6 +987,8 @@ export default function Graficas({ navigation }) {
   );
 }
 
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -682,6 +996,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   header: {
     backgroundColor: "#46607C",
@@ -733,16 +1050,17 @@ const styles = StyleSheet.create({
   },
   botonGrafica: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: "center",
     borderRadius: 8,
-    marginHorizontal: 5,
+    marginHorizontal: 2,
+    minHeight: 40,
   },
   botonGraficaActivo: {
     backgroundColor: "#31356E",
   },
   textoBotonGrafica: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
     color: "#666",
     textAlign: "center",
@@ -756,6 +1074,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 20,
+    minHeight: 300,
   },
   tituloGrafica: {
     fontSize: 18,
@@ -763,6 +1082,7 @@ const styles = StyleSheet.create({
     color: "#31356E",
     textAlign: "center",
     marginBottom: 15,
+    paddingHorizontal: 10,
   },
   cargando: {
     textAlign: "center",
@@ -774,7 +1094,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     color: "#999",
     textAlign: "center",
-    marginVertical: 10,
+    marginVertical: 20,
   },
   infoAyuda: {
     fontSize: 12,
@@ -783,99 +1103,96 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontStyle: "italic",
   },
-  infoDetalle: {
-    fontSize: 11,
-    color: "#888",
-    textAlign: "center",
-    marginTop: 3,
+  
+  contenidoPastelSimple: {
+    alignItems: "center",
   },
-  // Estilos para gráfica de Ingresos vs Egresos
-  leyendaComparativa: {
-    flexDirection: "row",
+  pastelSimpleVisual: {
+    alignItems: "center",
     justifyContent: "center",
-    marginBottom: 15,
-    gap: 20,
+    marginBottom: 20,
   },
-  itemLeyenda: {
+  circuloAnillos: {
+    position: "relative",
+    width: 150,
+    height: 150,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  anilloPastel: {
+    position: "absolute",
+    borderStyle: "solid",
+  },
+  centroPastelSimple: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  totalPastelSimple: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#31356E",
+  },
+  labelPastelSimple: {
+    fontSize: 10,
+    color: "#666",
+    marginTop: 2,
+  },
+  leyendaDetallada: {
+    width: "100%",
+    maxHeight: 200,
+  },
+  filaLeyenda: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    marginVertical: 6,
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    minHeight: 40,
   },
-  cuadradoLeyenda: {
-    width: 12,
-    height: 12,
+  marcadorColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  infoLeyenda: {
+    flex: 1,
+  },
+  nombreCategoria: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#333",
+    marginBottom: 2,
+  },
+  datosCategoria: {
+    fontSize: 11,
+    color: "#666",
+  },
+  barraPorcentajeContainer: {
+    flex: 1,
+    height: 6,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 3,
+    overflow: "hidden",
+    marginLeft: 10,
+    maxWidth: 80,
+  },
+  barraPorcentaje: {
+    height: "100%",
     borderRadius: 3,
   },
-  textoLeyenda: {
-    fontSize: 12,
-    color: "#333",
-    fontWeight: "500",
-  },
-  contenidoComparativa: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    height: 160,
-    marginBottom: 15,
-  },
-  grupoBarrasComparativas: {
-    flex: 1,
-    alignItems: "center",
-    marginHorizontal: 4,
-  },
-  barrasContainer: {
-    height: 120,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginBottom: 5,
-  },
-  barraWrapper: {
-    alignItems: "center",
-    marginVertical: 2,
-  },
-  barraIngreso: {
-    width: 14,
-    backgroundColor: "#00B894",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 2,
-  },
-  barraGasto: {
-    width: 14,
-    backgroundColor: "#FF6B6B",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 2,
-  },
-  valorBarra: {
-    fontSize: 9,
-    fontWeight: "600",
-    marginTop: 2,
-    color: "#333",
-  },
-  labelCategoria: {
-    fontSize: 10,
-    color: "#333",
-    textAlign: "center",
-    marginTop: 8,
-    height: 28,
-    maxWidth: 50,
-  },
-  totalesCategoria: {
-    marginTop: 4,
-    alignItems: "center",
-  },
-  totalIngreso: {
-    fontSize: 9,
-    color: "#00B894",
-    fontWeight: "600",
-  },
-  totalGasto: {
-    fontSize: 9,
-    color: "#FF6B6B",
-    fontWeight: "600",
-  },
-  resumenComparativa: {
+  resumenPastel: {
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "white",
@@ -883,90 +1200,272 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 10,
   },
-  // Estilos para gráfica Comparativa Mensual
+ 
+  contenidoBarras: {
+    alignItems: "center",
+    minHeight: 200,
+  },
+  barrasVisualContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 120,
+    width: "100%",
+    marginBottom: 10,
+    paddingHorizontal: 5,
+  },
+  barraGrupo: {
+    alignItems: "center",
+    flex: 1,
+    marginHorizontal: 3,
+    maxWidth: 50,
+  },
+  barraContainer: {
+    alignItems: "center",
+    height: 100,
+    justifyContent: "flex-end",
+    width: '100%',
+  },
+  barra: {
+    width: 20,
+    minHeight: 4,
+    maxHeight: 80,
+  },
+  montoBarra: {
+    fontSize: 9,
+    fontWeight: "bold",
+    color: "#31356E",
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  labelBarra: {
+    fontSize: 9,
+    color: "#333",
+    marginTop: 4,
+    textAlign: "center",
+    maxWidth: 45,
+    height: 25,
+  },
+  tipoCategoria: {
+    fontSize: 8,
+    fontWeight: "600",
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  porcentajeBarra: {
+    fontSize: 8,
+    color: "#666",
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  resumenBarras: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 10,
+  },
+  
+  leyendaComparativa: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 10,
+    gap: 15,
+  },
+  itemLeyenda: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  cuadradoLeyenda: {
+    width: 10,
+    height: 10,
+    borderRadius: 3,
+  },
+  textoLeyenda: {
+    fontSize: 11,
+    color: "#333",
+    fontWeight: "500",
+  },
+  contenidoComparativa: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 140,
+    marginBottom: 10,
+    minHeight: 120,
+  },
+  grupoBarrasComparativas: {
+    flex: 1,
+    alignItems: "center",
+    marginHorizontal: 3,
+    maxWidth: 45,
+  },
+  barrasContainer: {
+    height: 100,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 5,
+    width: '100%',
+  },
+  barraWrapper: {
+    alignItems: "center",
+    marginVertical: 2,
+    width: '100%',
+  },
+  barraIngreso: {
+    width: 12,
+    backgroundColor: "#00B894",
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    minHeight: 2,
+    maxHeight: 80, 
+  },
+  barraGasto: {
+    width: 12,
+    backgroundColor: "#FF6B6B",
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    minHeight: 2,
+    maxHeight: 80, 
+  },
+  valorBarra: {
+    fontSize: 8,
+    fontWeight: "600",
+    marginTop: 2,
+    color: "#333",
+    textAlign: 'center',
+  },
+  labelCategoria: {
+    fontSize: 9,
+    color: "#333",
+    textAlign: "center",
+    marginTop: 6,
+    height: 25,
+    maxWidth: 40,
+  },
+  totalesCategoria: {
+    marginTop: 3,
+    alignItems: "center",
+  },
+  totalIngreso: {
+    fontSize: 8,
+    color: "#00B894",
+    fontWeight: "600",
+    textAlign: 'center',
+  },
+  totalGasto: {
+    fontSize: 8,
+    color: "#FF6B6B",
+    fontWeight: "600",
+    textAlign: 'center',
+  },
+  resumenComparativa: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 10,
+  },
+
   contenidoMensual: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    height: 180,
-    marginBottom: 15,
+    height: 140,
+    marginBottom: 10,
+    minHeight: 130,
   },
   grupoMes: {
     flex: 1,
     alignItems: "center",
-    marginHorizontal: 4,
+    marginHorizontal: 3,
+    maxWidth: 45,
   },
   barrasMensualesContainer: {
-    height: 120,
+    height: 100,
     justifyContent: "flex-end",
     alignItems: "center",
     marginBottom: 5,
+    width: '100%',
   },
   barraMensualWrapper: {
     alignItems: "center",
     marginVertical: 2,
+    width: '100%',
   },
   valorBarraMensual: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
     marginTop: 2,
     color: "#333",
+    textAlign: 'center',
   },
   labelMes: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: "#31356E",
-    marginTop: 8,
-  },
-  anioMes: {
-    fontSize: 9,
-    color: "#666",
-    marginTop: 2,
-  },
-  balanceMes: {
-    marginTop: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 4,
-  },
-  textoBalance: {
     fontSize: 10,
     fontWeight: "bold",
+    color: "#31356E",
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  anioMes: {
+    fontSize: 8,
+    color: "#666",
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  balanceMes: {
+    marginTop: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 3,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  textoBalance: {
+    fontSize: 9,
+    fontWeight: "bold",
+    textAlign: 'center',
   },
   resumenMensual: {
     backgroundColor: "white",
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     marginTop: 10,
   },
   resumenMensualItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 4,
+    marginVertical: 3,
   },
   resumenMensualLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#666",
   },
   resumenMensualValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: "#31356E",
   },
   resumenItem: {
     alignItems: "center",
+    minWidth: 80,
   },
   resumenLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: "#666",
     marginBottom: 2,
     textAlign: "center",
   },
   resumenValue: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "bold",
+    textAlign: 'center',
   },
   resumenContainer: {
     marginHorizontal: 20,
