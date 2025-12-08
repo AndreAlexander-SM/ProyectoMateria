@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, Linking } from "react-native";
 
 import { TransaccionController } from "../controllers/TransaccionController";
 import { UsuarioController } from "../controllers/UsuarioController";
@@ -25,7 +25,7 @@ export default function Agregar({ onBack, onSave }) {
       return Alert.alert("Error", "No hay sesión activa");
     }
 
-    const exito = await transCtrl.agregar(
+    const resultado = await transCtrl.agregar(
       usuario.id,
       monto,
       categoria,
@@ -34,16 +34,45 @@ export default function Agregar({ onBack, onSave }) {
       tipo
     );
 
-    if (exito) {
-      Alert.alert("¡Listo!", "Transacción guardada correctamente", [
-        {
-          text: "OK",
-          onPress: () => {
-            if (onSave) onSave();
-            onBack();
+    if (resultado.success) {
+      if (resultado.alerta) {
+        Alert.alert(
+          "⚠️ LÍMITE EXCEDIDO",
+          `Has superado tu presupuesto en la categoría: ${categoria}.\n\nLímite: $${resultado.limite}\nTotal Gastado: $${resultado.total}\n\n¿Quieres enviar el reporte por correo?`,
+          [
+            {
+              text: "No",
+              onPress: () => {
+                if (onSave) onSave();
+                onBack();
+              }
+            },
+            {
+              text: "Sí, Enviar Correo",
+              onPress: () => {
+                const asunto = `Alerta de Presupuesto: ${categoria}`;
+                const cuerpo = `Hola ${usuario.nombre},\n\nAtención: Has excedido tu presupuesto mensual en ${categoria}.\n\n- Tu límite asignado: $${resultado.limite}\n- Tu gasto total actual: $${resultado.total}\n\nTe recomendamos revisar tus gastos.`;
+                
+                const url = `mailto:${usuario.email}?subject=${asunto}&body=${cuerpo}`;
+                Linking.openURL(url).catch(() => Alert.alert("Error", "No se pudo abrir la app de correo"));
+
+                if (onSave) onSave();
+                onBack();
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert("¡Listo!", "Transacción guardada correctamente", [
+          {
+            text: "OK",
+            onPress: () => {
+              if (onSave) onSave();
+              onBack();
+            },
           },
-        },
-      ]);
+        ]);
+      }
     } else {
       Alert.alert("Error", "No se pudo guardar la transacción");
     }

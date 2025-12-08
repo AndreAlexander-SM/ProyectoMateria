@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 
-const DB_NAME = "ahorraplus_final_v2.db";
+const DB_NAME = "ahorraplus_final_v4.db";
 
 let dbInstance = null;
 
@@ -47,6 +47,17 @@ const initTables = async (db) => {
       descripcion TEXT
     );
   `);
+
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS presupuestos (
+      id INTEGER PRIMARY KEY NOT NULL,
+      usuario_id INTEGER,
+      nombre TEXT,
+      categoria TEXT,
+      mes TEXT,
+      monto_limite REAL
+    );
+  `);
 };
 
 export const insertUsuario = async (nombre, email, password, telefono) => {
@@ -73,14 +84,7 @@ export const updatePasswordByEmail = async (email, newPassword) => {
   );
 };
 
-export const insertTransaccion = async (
-  usuarioId,
-  monto,
-  categoria,
-  fecha,
-  descripcion,
-  tipo
-) => {
+export const insertTransaccion = async (usuarioId, monto, categoria, fecha, descripcion, tipo) => {
   const db = await getDB();
   return await db.runAsync(
     "INSERT INTO transacciones (usuario_id, monto, categoria, fecha, descripcion, tipo) VALUES (?, ?, ?, ?, ?, ?);",
@@ -98,23 +102,45 @@ export const getTransacciones = async (usuarioId) => {
 
 export const deleteTransaccionDB = async (id) => {
   const db = await getDB();
-  return await db.runAsync(
-    "DELETE FROM transacciones WHERE id = ?;",
-    [id]
-  );
+  return await db.runAsync("DELETE FROM transacciones WHERE id = ?;", [id]);
 };
 
-export const updateTransaccion = async (
-  id,
-  monto,
-  categoria,
-  fecha,
-  descripcion,
-  tipo
-) => {
+export const updateTransaccion = async (id, monto, categoria, fecha, descripcion, tipo) => {
   const db = await getDB();
   return await db.runAsync(
     "UPDATE transacciones SET monto = ?, categoria = ?, fecha = ?, descripcion = ?, tipo = ? WHERE id = ?;",
     [monto, categoria, fecha, descripcion, tipo, id]
+  );
+};
+
+export const insertPresupuesto = async (usuarioId, nombre, categoria, mes, monto) => {
+  const db = await getDB();
+  return await db.runAsync(
+    "INSERT INTO presupuestos (usuario_id, nombre, categoria, mes, monto_limite) VALUES (?, ?, ?, ?, ?);",
+    [usuarioId, nombre, categoria, mes, monto]
+  );
+};
+
+export const getPresupuestos = async (usuarioId) => {
+  const db = await getDB();
+  return await db.getAllAsync(
+    "SELECT * FROM presupuestos WHERE usuario_id = ?;",
+    [usuarioId]
+  );
+};
+
+export const deletePresupuestoDB = async (id) => {
+  const db = await getDB();
+  return await db.runAsync(
+    "DELETE FROM presupuestos WHERE id = ?;",
+    [id]
+  );
+};
+
+export const updatePresupuestoDB = async (id, nombre, categoria, mes, monto) => {
+  const db = await getDB();
+  return await db.runAsync(
+    "UPDATE presupuestos SET nombre = ?, categoria = ?, mes = ?, monto_limite = ? WHERE id = ?;",
+    [nombre, categoria, mes, monto, id]
   );
 };
