@@ -14,12 +14,15 @@ export default function Registro({ navigation }) {
   const [verPassword, setVerPassword] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const telefonoRegex = /^[0-9]{10}$/;
 
   const validarCampos = () => {
     if (nombre.trim() === "") return Alert.alert("Error", "Por favor ingresa tu nombre completo");
     if (email.trim() === "" || !emailRegex.test(email)) return Alert.alert("Error", "Correo inválido");
+    if (!telefonoRegex.test(telefono.trim())) return Alert.alert("Error", "El teléfono debe tener 10 dígitos numéricos");
     if (contraseña.trim() === "") return Alert.alert("Error", "Completa tu contraseña");
     if (!aceptarTerminos) return Alert.alert("Error", "Debes aceptar los términos");
+;
     return true;
   };
 
