@@ -51,7 +51,6 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
 
   // --- LÓGICA DE FILTRADO Y LIMPIEZA DE DATOS ---
   
-  // 1. Obtener listas únicas (CORREGIDO: Se filtran los nulos/undefined/vacíos)
   const uniqueCategories = [
     ...new Set(
         listaTransacciones

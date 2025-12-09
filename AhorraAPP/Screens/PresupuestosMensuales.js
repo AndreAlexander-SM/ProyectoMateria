@@ -6,6 +6,8 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { PresupuestoController } from "../controllers/PresupuestoController";
 import { UsuarioController } from "../controllers/UsuarioController";
+import { TransaccionController } from "../controllers/TransaccionController";
+import { ApartadoController } from "../controllers/ApartadoController";
 
 export default function PresupuestosMensuales({ navigation }) {
   const [filtroMes, setFiltroMes] = useState("");
@@ -14,6 +16,8 @@ export default function PresupuestosMensuales({ navigation }) {
 
   const presCtrl = new PresupuestoController();
   const userCtrl = new UsuarioController();
+  const transCtrl = new TransaccionController();
+  const apartadoCtrl = new ApartadoController();
 
   const cargarDatos = async () => {
     const usuario = await userCtrl.getUsuarioActivo();
@@ -68,6 +72,21 @@ export default function PresupuestosMensuales({ navigation }) {
 
     const usuario = await userCtrl.getUsuarioActivo();
     if (usuario) {
+      // --- INICIO DE VALIDACIÓN DE DINERO DISPONIBLE ---
+      
+      const balanceTrans = await transCtrl.obtenerBalance(usuario.id);
+      const totalAhorrado = await apartadoCtrl.obtenerTotalAhorrado(usuario.id);
+      const dineroDisponible = balanceTrans.total - totalAhorrado;
+      const montoAInsertar = parseFloat(nuevoMonto.toString().replace("$", "").replace(",", ""));
+
+      if (montoAInsertar > dineroDisponible) {
+        Alert.alert(
+          "Saldo insuficiente",
+          `No puedes crear este apartado. Tienes disponible $${dineroDisponible.toFixed(2)} y tratas de apartar $${montoAInsertar.toFixed(2)}.`
+        );
+        return;
+      }
+
       const exito = await presCtrl.crear(usuario.id, nuevoNombre, nuevaCategoria, nuevoMes, nuevoMonto);
 
       if (exito) {
