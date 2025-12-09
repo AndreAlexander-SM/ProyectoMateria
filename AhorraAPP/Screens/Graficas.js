@@ -1,5 +1,15 @@
 import React, { useState, useCallback } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, Image, ScrollView, StatusBar, Platform, Dimensions, } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  StatusBar,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { TransaccionController } from "../controllers/TransaccionController";
 import { UsuarioController } from "../controllers/UsuarioController";
@@ -17,17 +27,19 @@ export default function Graficas({ navigation }) {
     transaccionesMensuales: [],
   });
   const [loading, setLoading] = useState(true);
-  
+
   const transCtrl = new TransaccionController();
   const userCtrl = new UsuarioController();
 
   const obtenerNombreMes = (fechaISO) => {
     if (!fechaISO) return "Sin fecha";
+    
     const partes = fechaISO.split("-");
     if (partes.length < 2) return fechaISO;
     
     const year = partes[0];
     const month = partes[1];
+    
     const meses = [
       "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -35,6 +47,7 @@ export default function Graficas({ navigation }) {
     
     const mesIndex = parseInt(month, 10) - 1;
     if (mesIndex < 0 || mesIndex > 11) return fechaISO;
+    
     return `${meses[mesIndex]} ${year}`;
   };
 
@@ -46,11 +59,13 @@ export default function Graficas({ navigation }) {
         if (!t || typeof t !== 'object') return;
         
         let fechaTransaccion = t.fecha;
+        
         if (!fechaTransaccion) {
           fechaTransaccion = new Date().toISOString().split('T')[0];
         }
         
         const fechaStr = String(fechaTransaccion).trim();
+        
         let year, month;
         
         const match1 = fechaStr.match(/(\d{4})[-\/](\d{1,2})/);
@@ -75,28 +90,35 @@ export default function Graficas({ navigation }) {
         const mesKey = `${year}-${mesFormateado}`;
         
         if (!transaccionesPorMes[mesKey]) {
-          transaccionesPorMes[mesKey] = { gastos: 0, ingresos: 0, balance: 0 };
+          transaccionesPorMes[mesKey] = {
+            gastos: 0,
+            ingresos: 0,
+            balance: 0
+          };
         }
         
         const monto = Math.abs(parseFloat(t.monto)) || 0;
+        
         if (t.tipo === "gasto") {
           transaccionesPorMes[mesKey].gastos += monto;
         } else if (t.tipo === "ingreso") {
           transaccionesPorMes[mesKey].ingresos += monto;
         }
         
-        transaccionesPorMes[mesKey].balance = transaccionesPorMes[mesKey].ingresos - transaccionesPorMes[mesKey].gastos;
+        transaccionesPorMes[mesKey].balance = 
+          transaccionesPorMes[mesKey].ingresos - transaccionesPorMes[mesKey].gastos;
+        
       } catch (error) {
         console.error("Error procesando transacción:", error);
       }
     });
     
     return Object.entries(transaccionesPorMes)
-      .map(([mes, datos]) => ({
-        mes,
-        gastos: datos.gastos || 0,
-        ingresos: datos.ingresos || 0,
-        balance: datos.balance || 0
+      .map(([mes, datos]) => ({ 
+        mes, 
+        gastos: datos.gastos || 0, 
+        ingresos: datos.ingresos || 0, 
+        balance: datos.balance || 0 
       }))
       .sort((a, b) => b.mes.localeCompare(a.mes))
       .slice(0, 6);
@@ -107,18 +129,22 @@ export default function Graficas({ navigation }) {
       const cargarDatos = async () => {
         try {
           setLoading(true);
-          const usuario = userCtrl.getUsuarioActivo ? userCtrl.getUsuarioActivo() : { id: 1 };
+
+          const usuario = userCtrl.getUsuarioActivo
+            ? userCtrl.getUsuarioActivo()
+            : { id: 1 };
           const usuarioId = usuario.id || 1;
-          
+
           const transacciones = await transCtrl.obtenerTodas(usuarioId);
           
           const gastosPorCategoria = {};
           const ingresosPorCategoria = {};
           let totalGastos = 0;
           let totalIngresos = 0;
-          
+
           transacciones.forEach(t => {
             const valor = Math.abs(parseFloat(t.monto)) || 0;
+            
             if (t.tipo === "gasto") {
               totalGastos += valor;
               const categoria = t.categoria || "Sin categoría";
@@ -129,10 +155,10 @@ export default function Graficas({ navigation }) {
               ingresosPorCategoria[categoria] = (ingresosPorCategoria[categoria] || 0) + valor;
             }
           });
-          
+
           const balance = totalIngresos - totalGastos;
           const transaccionesMensuales = procesarTransaccionesMensuales(transacciones);
-          
+
           setDatos({
             totalGastos,
             totalIngresos,
@@ -155,7 +181,7 @@ export default function Graficas({ navigation }) {
           setLoading(false);
         }
       };
-      
+
       cargarDatos();
     }, [])
   );
@@ -170,8 +196,12 @@ export default function Graficas({ navigation }) {
 
   const getMensajeBalance = () => {
     const { balance } = datos;
-    if (balance > 0) return `¡Excelente! Tienes un superávit de $${balance.toFixed(2)}.`;
-    else if (balance < 0) return `Cuidado, tus gastos superan tus ingresos por $${Math.abs(balance).toFixed(2)}.`;
+    if (balance > 0)
+      return `¡Excelente! Tienes un superávit de $${balance.toFixed(2)}.`;
+    else if (balance < 0)
+      return `Cuidado, tus gastos superan tus ingresos por $${Math.abs(
+        balance
+      ).toFixed(2)}.`;
     else return "Tus finanzas están perfectamente equilibradas.";
   };
 
@@ -181,7 +211,7 @@ export default function Graficas({ navigation }) {
     if (Object.keys(ingresosPorCategoria).length === 0) {
       return [];
     }
-    
+
     const categorias = Object.entries(ingresosPorCategoria)
       .map(([categoria, monto]) => ({
         categoria: categoria || "Sin categoría",
@@ -190,7 +220,7 @@ export default function Graficas({ navigation }) {
         tipo: "ingreso"
       }))
       .sort((a, b) => b.monto - a.monto);
-      
+    
     return categorias;
   };
 
@@ -200,7 +230,7 @@ export default function Graficas({ navigation }) {
     if (Object.keys(gastosPorCategoria).length === 0) {
       return [];
     }
-    
+
     const categorias = Object.entries(gastosPorCategoria)
       .map(([categoria, monto]) => ({
         categoria: categoria || "Sin categoría",
@@ -209,30 +239,19 @@ export default function Graficas({ navigation }) {
         tipo: "gasto"
       }))
       .sort((a, b) => b.monto - a.monto);
-      
+    
     return categorias;
   };
 
-  const obtenerDatosParaGraficaBarras = () => {
-    const categoriasIngresos = obtenerCategoriasConIngresos();
-    const categoriasGastos = obtenerCategoriasConGastos();
-    
-    const topIngresos = categoriasIngresos.slice(0, 3);
-    const topGastos = categoriasGastos.slice(0, 3);
-    
-    const todasCategorias = [...topIngresos, ...topGastos]
-      .sort((a, b) => b.monto - a.monto)
-      .slice(0, 6);
-      
-    return todasCategorias;
-  };
-
+  // Función mejorada para calcular altura de barras
   const calcularAlturaBarra = (valor, maxValor) => {
+    if (maxValor <= 0) return 0;
     const alturaMaxima = 60;
-    if (maxValor <= 0) return 10;
-    return Math.max(5, (valor / maxValor) * alturaMaxima);
+    const altura = (valor / maxValor) * alturaMaxima;
+    return Math.max(8, Math.min(altura, alturaMaxima));
   };
 
+  // 1. GRÁFICA PASTEL
   const renderGraficaPastelSimple = () => {
     const categoriasIngresos = obtenerCategoriasConIngresos();
     const categoriasGastos = obtenerCategoriasConGastos();
@@ -260,12 +279,12 @@ export default function Graficas({ navigation }) {
     }
 
     const totalTransacciones = datos.totalGastos + datos.totalIngresos;
-    
+
     return (
       <View style={styles.graficaContainer}>
         <Text style={styles.tituloGrafica}>Distribución de Transacciones por Categoría</Text>
-        
-        <View style={styles.contenidoPastelSimple}>
+
+        <View style={styles.contenidoPastel}>
           <View style={styles.pastelSimpleVisual}>
             <View style={styles.circuloAnillos}>
               {todasCategorias.map((item, index) => {
@@ -287,19 +306,32 @@ export default function Graficas({ navigation }) {
                   />
                 );
               })}
+
               <View style={styles.centroPastelSimple}>
-                <Text style={styles.totalPastelSimple}>${totalTransacciones.toFixed(0)}</Text>
+                <Text style={styles.totalPastelSimple}>
+                  ${totalTransacciones.toFixed(0)}
+                </Text>
                 <Text style={styles.labelPastelSimple}>Total Transacciones</Text>
               </View>
             </View>
           </View>
-          
+
           <View style={styles.leyendaDetallada}>
             {todasCategorias.map((item, index) => (
-              <View key={item.categoria} style={styles.filaLeyenda}>
-                <View style={[styles.marcadorColor, { backgroundColor: getColor(index) }]} />
+              <View
+                key={item.categoria}
+                style={styles.filaLeyenda}
+              >
+                <View
+                  style={[
+                    styles.marcadorColor,
+                    { backgroundColor: getColor(index) },
+                  ]}
+                />
                 <View style={styles.infoLeyenda}>
-                  <Text style={styles.nombreCategoria}>{item.categoria}</Text>
+                  <Text style={styles.nombreCategoria}>
+                    {item.categoria}
+                  </Text>
                   <Text style={styles.datosCategoria}>
                     {item.tipo === "ingreso" ? (
                       <Text style={{color: '#00B894'}}>Ingreso: +${item.monto.toFixed(2)}</Text>
@@ -309,14 +341,21 @@ export default function Graficas({ navigation }) {
                     {" "}• {item.porcentaje.toFixed(1)}%
                   </Text>
                 </View>
-                <View style={styles.barraPorcentajeContainer}>
-                  <View style={[
-                    styles.barraPorcentaje,
-                    {
-                      width: `${Math.min(item.porcentaje, 100)}%`,
-                      backgroundColor: getColor(index),
-                    },
-                  ]} />
+                <View
+                  style={styles.barraPorcentajeContainer}
+                >
+                  <View
+                    style={[
+                      styles.barraPorcentaje,
+                      {
+                        width: `${Math.min(
+                          item.porcentaje,
+                          100
+                        )}%`,
+                        backgroundColor: getColor(index),
+                      },
+                    ]}
+                  />
                 </View>
               </View>
             ))}
@@ -341,51 +380,75 @@ export default function Graficas({ navigation }) {
     );
   };
 
+  // 2. GRÁFICA BARRAS - SIN ESPACIO EN BLANCO
   const renderGraficaBarras = () => {
-    const datosGrafica = obtenerDatosParaGraficaBarras();
+    const categoriasIngresos = obtenerCategoriasConIngresos();
+    const categoriasGastos = obtenerCategoriasConGastos();
     
+    const topIngresos = categoriasIngresos.slice(0, 3);
+    const topGastos = categoriasGastos.slice(0, 3);
+    
+    const todasCategorias = [...topIngresos, ...topGastos]
+      .sort((a, b) => b.monto - a.monto)
+      .slice(0, 6);
+
     if (loading) {
       return (
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Transacciones por Categoría</Text>
-          <Text style={styles.cargando}>Cargando datos...</Text>
+          <View style={styles.contenidoBarras}>
+            <Text style={styles.cargando}>Cargando datos...</Text>
+          </View>
         </View>
       );
     }
 
-    if (datosGrafica.length === 0) {
+    if (todasCategorias.length === 0) {
       return (
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Transacciones por Categoría</Text>
-          <Text style={styles.sinDatos}>No hay transacciones registradas aún</Text>
+          <View style={styles.contenidoBarras}>
+            <Text style={styles.sinDatos}>
+              No hay transacciones registradas aún
+            </Text>
+          </View>
         </View>
       );
     }
 
-    const maxMonto = Math.max(...datosGrafica.map((item) => item.monto), 1);
-    
+    const maxMonto = Math.max(
+      ...todasCategorias.map((item) => item.monto),
+      1
+    );
+
     return (
       <View style={styles.graficaContainer}>
         <Text style={styles.tituloGrafica}>
-          Transacciones por Categoría (Top {Math.min(6, datosGrafica.length)})
+          Transacciones por Categoría (Top {Math.min(6, todasCategorias.length)})
         </Text>
-        
+
         <View style={styles.contenidoBarras}>
           <View style={styles.barrasVisualContainer}>
-            {datosGrafica.map((item, index) => {
+            {todasCategorias.map((item, index) => {
               const altura = calcularAlturaBarra(item.monto, maxMonto);
               const color = item.tipo === "ingreso" ? "#00B894" : "#FF6B6B";
-              
+
               return (
-                <View key={`${item.categoria}-${index}`} style={styles.barraGrupo}>
+                <View
+                  key={`${item.categoria}-${index}`}
+                  style={styles.barraGrupo}
+                >
                   <View style={styles.barraContainer}>
-                    <View style={[
-                      styles.barra,
-                      {
-                        height: altura,
-                        backgroundColor: color,
-                      },
-                    ]} />
+                    <View
+                      style={[
+                        styles.barra,
+                        {
+                          height: altura,
+                          backgroundColor: color,
+                          width: 28,
+                        },
+                      ]}
+                    />
                     
                     <View style={styles.montoContainer}>
                       <Text style={styles.montoBarra}>
@@ -414,7 +477,7 @@ export default function Graficas({ navigation }) {
               );
             })}
           </View>
-          
+
           <View style={styles.resumenBarras}>
             <View style={styles.resumenItem}>
               <Text style={styles.resumenLabel}>Total Ingresos:</Text>
@@ -430,7 +493,7 @@ export default function Graficas({ navigation }) {
             </View>
             <View style={styles.resumenItem}>
               <Text style={styles.resumenLabel}>Categorías:</Text>
-              <Text style={styles.resumenValue}>{datosGrafica.length}</Text>
+              <Text style={styles.resumenValue}>{todasCategorias.length}</Text>
             </View>
           </View>
         </View>
@@ -438,14 +501,17 @@ export default function Graficas({ navigation }) {
     );
   };
 
+  // 3. GRÁFICA INGRESOS VS EGRESOS - SIN ESPACIO EN BLANCO
   const renderGraficaIngresosVsEgresos = () => {
     const { gastosPorCategoria, ingresosPorCategoria } = datos;
-    
+
     if (loading) {
       return (
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Ingresos vs Egresos por Categoría</Text>
-          <Text style={styles.cargando}>Cargando datos...</Text>
+          <View style={styles.contenidoComparativa}>
+            <Text style={styles.cargando}>Cargando datos...</Text>
+          </View>
         </View>
       );
     }
@@ -459,7 +525,9 @@ export default function Graficas({ navigation }) {
       return (
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Ingresos vs Egresos por Categoría</Text>
-          <Text style={styles.sinDatos}>No hay transacciones registradas aún</Text>
+          <View style={styles.contenidoComparativa}>
+            <Text style={styles.sinDatos}>No hay transacciones registradas aún</Text>
+          </View>
         </View>
       );
     }
@@ -469,13 +537,15 @@ export default function Graficas({ navigation }) {
         categoria: categoria || "Sin categoría",
         ingresos: ingresosPorCategoria[categoria] || 0,
         gastos: gastosPorCategoria[categoria] || 0,
-        color: getColor(index)
       }))
       .sort((a, b) => (b.ingresos + b.gastos) - (a.ingresos + a.gastos))
       .slice(0, 6);
 
-    const maxValor = Math.max(...datosGrafica.map(d => Math.max(d.ingresos, d.gastos)), 1);
-    
+    const maxValor = Math.max(
+      ...datosGrafica.map(d => Math.max(d.ingresos, d.gastos)),
+      1
+    );
+
     return (
       <View style={styles.graficaContainer}>
         <Text style={styles.tituloGrafica}>Ingresos vs Egresos por Categoría</Text>
@@ -490,59 +560,80 @@ export default function Graficas({ navigation }) {
             <Text style={styles.textoLeyenda}>Egresos</Text>
           </View>
         </View>
-        
+
         <View style={styles.contenidoComparativa}>
           {datosGrafica.map((item, index) => {
             const alturaIngresos = calcularAlturaBarra(item.ingresos, maxValor);
             const alturaGastos = calcularAlturaBarra(item.gastos, maxValor);
-            
+            const totalAltura = alturaIngresos + alturaGastos;
+
             return (
               <View key={`${item.categoria}-${index}`} style={styles.grupoBarrasComparativas}>
-                <View style={styles.barrasContainer}>
+                <View style={[
+                  styles.barrasContainer,
+                  { height: totalAltura }
+                ]}>
                   {/* Valor de Ingresos */}
-                  <Text style={styles.valorBarraSuperior}>
-                    {item.ingresos > 0 ? `$${item.ingresos > 999 ? `${(item.ingresos/1000).toFixed(1)}k` : item.ingresos.toFixed(0)}` : ''}
-                  </Text>
+                  {item.ingresos > 0 && (
+                    <Text style={styles.valorBarraSuperior}>
+                      {item.ingresos > 999 ? `$${(item.ingresos/1000).toFixed(1)}k` : `$${item.ingresos.toFixed(0)}`}
+                    </Text>
+                  )}
                   
                   {/* Barra de Ingresos */}
-                  <View style={[
-                    styles.barraIngresoComparativa, 
-                    { 
-                      height: alturaIngresos,
-                      marginTop: 4,
-                      marginBottom: 4
-                    }
-                  ]} />
+                  {item.ingresos > 0 && (
+                    <View style={[
+                      styles.barraIngresoComparativa, 
+                      { 
+                        height: alturaIngresos,
+                        width: 26,
+                      }
+                    ]} />
+                  )}
                   
-                  {/* Valor de Gastos */}
-                  <Text style={styles.valorBarraInferior}>
-                    {item.gastos > 0 ? `$${item.gastos > 999 ? `${(item.gastos/1000).toFixed(1)}k` : item.gastos.toFixed(0)}` : ''}
-                  </Text>
+                  {/* Separador solo si hay ambas barras */}
+                  {item.ingresos > 0 && item.gastos > 0 && (
+                    <View style={styles.separadorBarras} />
+                  )}
                   
                   {/* Barra de Gastos */}
-                  <View style={[
-                    styles.barraGastoComparativa, 
-                    { 
-                      height: alturaGastos,
-                      marginTop: 4,
-                      marginBottom: 4
-                    }
-                  ]} />
+                  {item.gastos > 0 && (
+                    <View style={[
+                      styles.barraGastoComparativa, 
+                      { 
+                        height: alturaGastos,
+                        width: 26,
+                      }
+                    ]} />
+                  )}
+                  
+                  {/* Valor de Gastos */}
+                  {item.gastos > 0 && (
+                    <Text style={styles.valorBarraInferior}>
+                      {item.gastos > 999 ? `$${(item.gastos/1000).toFixed(1)}k` : `$${item.gastos.toFixed(0)}`}
+                    </Text>
+                  )}
                 </View>
                 
-                {/* Nombre de categoría - EN UNA SOLA LÍNEA */}
-                <Text style={styles.labelCategoriaComparativa} numberOfLines={1}>
-                  {item.categoria}
-                </Text>
-                
-                {/* Totales por categoría - AL LADO */}
-                <View style={styles.totalesCategoriaComparativa}>
-                  <Text style={styles.totalIngresoComparativa}>
-                    {item.ingresos > 0 ? `+$${item.ingresos > 999 ? `${(item.ingresos/1000).toFixed(1)}k` : item.ingresos.toFixed(0)}` : ''}
+                {/* Nombre de categoría */}
+                <View style={styles.infoCategoriaContainerComparativa}>
+                  <Text style={styles.labelCategoriaComparativa} numberOfLines={1}>
+                    {item.categoria}
                   </Text>
-                  <Text style={styles.totalGastoComparativa}>
-                    {item.gastos > 0 ? `-$${item.gastos > 999 ? `${(item.gastos/1000).toFixed(1)}k` : item.gastos.toFixed(0)}` : ''}
-                  </Text>
+                  
+                  {/* Totales por categoría */}
+                  <View style={styles.totalesCategoriaComparativa}>
+                    {item.ingresos > 0 && (
+                      <Text style={styles.totalIngresoComparativa}>
+                        +${item.ingresos > 999 ? `${(item.ingresos/1000).toFixed(1)}k` : item.ingresos.toFixed(0)}
+                      </Text>
+                    )}
+                    {item.gastos > 0 && (
+                      <Text style={styles.totalGastoComparativa}>
+                        -${item.gastos > 999 ? `${(item.gastos/1000).toFixed(1)}k` : item.gastos.toFixed(0)}
+                      </Text>
+                    )}
+                  </View>
                 </View>
               </View>
             );
@@ -567,6 +658,7 @@ export default function Graficas({ navigation }) {
     );
   };
 
+  // 4. GRÁFICA COMPARATIVA MENSUAL - SIN ESPACIO EN BLANCO
   const renderGraficaComparativaMensual = () => {
     const { transaccionesMensuales, totalGastos, totalIngresos } = datos;
     
@@ -574,7 +666,9 @@ export default function Graficas({ navigation }) {
       return (
         <View style={styles.graficaContainer}>
           <Text style={styles.tituloGrafica}>Comparativa Mensual</Text>
-          <Text style={styles.cargando}>Cargando datos...</Text>
+          <View style={styles.contenidoMensual}>
+            <Text style={styles.cargando}>Cargando datos...</Text>
+          </View>
         </View>
       );
     }
@@ -617,45 +711,60 @@ export default function Graficas({ navigation }) {
           {transaccionesMensuales.map((mesData, index) => {
             const alturaIngresos = calcularAlturaBarra(mesData.ingresos, maxValor);
             const alturaGastos = calcularAlturaBarra(mesData.gastos, maxValor);
+            const totalAltura = alturaIngresos + alturaGastos;
             const nombreMes = obtenerNombreMes(mesData.mes);
             const nombreMesCorto = nombreMes.split(' ')[0].substring(0, 3);
             const anio = mesData.mes ? mesData.mes.split('-')[0] : '';
             
             return (
               <View key={`${mesData.mes}-${index}`} style={styles.grupoMes}>
-                <View style={styles.barrasMensualesContainer}>
+                <View style={[
+                  styles.barrasMensualesContainer,
+                  { height: totalAltura }
+                ]}>
                   {/* Valor de Ingresos */}
-                  <Text style={styles.valorBarraSuperiorMensual}>
-                    {mesData.ingresos > 0 ? `$${mesData.ingresos > 999 ? `${(mesData.ingresos/1000).toFixed(1)}k` : mesData.ingresos.toFixed(0)}` : ''}
-                  </Text>
+                  {mesData.ingresos > 0 && (
+                    <Text style={styles.valorBarraSuperiorMensual}>
+                      {mesData.ingresos > 999 ? `$${(mesData.ingresos/1000).toFixed(1)}k` : `$${mesData.ingresos.toFixed(0)}`}
+                    </Text>
+                  )}
                   
                   {/* Barra de Ingresos */}
-                  <View style={[
-                    styles.barraIngresoMensual, 
-                    { 
-                      height: alturaIngresos,
-                      marginTop: 4,
-                      marginBottom: 4
-                    }
-                  ]} />
+                  {mesData.ingresos > 0 && (
+                    <View style={[
+                      styles.barraIngresoMensual, 
+                      { 
+                        height: alturaIngresos,
+                        width: 26,
+                      }
+                    ]} />
+                  )}
                   
-                  {/* Valor de Gastos */}
-                  <Text style={styles.valorBarraInferiorMensual}>
-                    {mesData.gastos > 0 ? `$${mesData.gastos > 999 ? `${(mesData.gastos/1000).toFixed(1)}k` : mesData.gastos.toFixed(0)}` : ''}
-                  </Text>
+                  {/* Separador solo si hay ambas barras */}
+                  {mesData.ingresos > 0 && mesData.gastos > 0 && (
+                    <View style={styles.separadorBarrasMensual} />
+                  )}
                   
                   {/* Barra de Gastos */}
-                  <View style={[
-                    styles.barraGastoMensual, 
-                    { 
-                      height: alturaGastos,
-                      marginTop: 4,
-                      marginBottom: 4
-                    }
-                  ]} />
+                  {mesData.gastos > 0 && (
+                    <View style={[
+                      styles.barraGastoMensual, 
+                      { 
+                        height: alturaGastos,
+                        width: 26,
+                      }
+                    ]} />
+                  )}
+                  
+                  {/* Valor de Gastos */}
+                  {mesData.gastos > 0 && (
+                    <Text style={styles.valorBarraInferiorMensual}>
+                      {mesData.gastos > 999 ? `$${(mesData.gastos/1000).toFixed(1)}k` : `$${mesData.gastos.toFixed(0)}`}
+                    </Text>
+                  )}
                 </View>
                 
-                {/* Información del mes - MÁS COMPACTA */}
+                {/* Información del mes */}
                 <View style={styles.infoMesContainer}>
                   <Text style={styles.labelMes}>
                     {nombreMesCorto}
@@ -665,7 +774,7 @@ export default function Graficas({ navigation }) {
                   </Text>
                 </View>
                 
-                {/* Balance del mes - MÁS PEQUEÑO */}
+                {/* Balance del mes */}
                 <View style={styles.balanceMes}>
                   <Text style={[
                     styles.textoBalance,
@@ -925,16 +1034,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     marginHorizontal: 20,
     borderRadius: 12,
-    padding: 15,
+    paddingHorizontal: 15, // Solo padding horizontal
+    paddingTop: 10, // Reducido drásticamente de 15
+    paddingBottom: 15,
     marginBottom: 20,
-    minHeight: 300,
+    minHeight: 280, // Reducido
   },
   tituloGrafica: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#31356E",
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 10, // Reducido de 15
     paddingHorizontal: 10,
   },
   cargando: {
@@ -956,13 +1067,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontStyle: "italic",
   },
-  contenidoPastelSimple: {
+  contenidoPastel: {
     alignItems: "center",
+    marginTop: 0, // Eliminado margen superior
   },
   pastelSimpleVisual: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 15, // Reducido
   },
   circuloAnillos: {
     position: "relative",
@@ -1001,102 +1113,101 @@ const styles = StyleSheet.create({
   },
   leyendaDetallada: {
     width: "100%",
-    maxHeight: 200,
+    maxHeight: 180, // Reducido
+    marginTop: 10, // Reducido
   },
   filaLeyenda: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 6,
-    paddingVertical: 4,
+    marginVertical: 4, // Reducido
+    paddingVertical: 3, // Reducido
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
-    minHeight: 40,
+    minHeight: 35, // Reducido
   },
   marcadorColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 14, // Reducido
+    height: 14, // Reducido
+    borderRadius: 7, // Reducido
+    marginRight: 10, // Reducido
   },
   infoLeyenda: {
     flex: 1,
   },
   nombreCategoria: {
-    fontSize: 13,
+    fontSize: 12, // Reducido
     fontWeight: "500",
     color: "#333",
-    marginBottom: 2,
+    marginBottom: 1, // Reducido
   },
   datosCategoria: {
-    fontSize: 11,
+    fontSize: 10, // Reducido
     color: "#666",
   },
   barraPorcentajeContainer: {
     flex: 1,
-    height: 6,
+    height: 5, // Reducido
     backgroundColor: "#e0e0e0",
-    borderRadius: 3,
+    borderRadius: 2.5, // Reducido
     overflow: "hidden",
-    marginLeft: 10,
-    maxWidth: 80,
+    marginLeft: 8, // Reducido
+    maxWidth: 70, // Reducido
   },
   barraPorcentaje: {
     height: "100%",
-    borderRadius: 3,
+    borderRadius: 2.5, // Reducido
   },
   resumenPastel: {
     flexDirection: "row",
     justifyContent: "space-around",
     backgroundColor: "white",
     borderRadius: 8,
-    padding: 10,
-    marginTop: 10,
+    padding: 8, // Reducido
+    marginTop: 8, // Reducido
   },
   contenidoBarras: {
     alignItems: "center",
-    minHeight: 220,
+    minHeight: 180, // Reducido
   },
   barrasVisualContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "flex-end",
-    height: 140,
+    height: 110, // Reducido
     width: "100%",
-    marginBottom: 10,
-    paddingHorizontal: 5,
+    marginBottom: 2, // Reducido
+    paddingHorizontal: 0,
   },
   barraGrupo: {
     alignItems: "center",
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: 1,
+    minWidth: 55,
   },
   barraContainer: {
     alignItems: "center",
-    height: 100,
+    height: 80, // Reducido
     justifyContent: "flex-end",
     width: '100%',
   },
   barra: {
-    width: 24,
     minHeight: 5,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
   },
   montoContainer: {
-    marginTop: 4,
-    minHeight: 20,
+    marginTop: 2, // Reducido
+    minHeight: 15,
     justifyContent: 'center',
   },
   montoBarra: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#31356E",
     textAlign: 'center',
   },
   infoCategoriaContainer: {
     alignItems: "center",
-    marginTop: 8,
-    minHeight: 50,
+    marginTop: 3,
+    minHeight: 35,
     width: '100%',
   },
   labelBarra: {
@@ -1104,17 +1215,17 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
     fontWeight: '500',
-    marginBottom: 3,
-    maxWidth: 50,
+    marginBottom: 2,
+    maxWidth: 55,
   },
   tipoCategoria: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
-    marginBottom: 2,
+    marginBottom: 1,
     textAlign: 'center',
   },
   porcentajeBarra: {
-    fontSize: 9,
+    fontSize: 8,
     color: "#666",
     textAlign: 'center',
     fontWeight: '500',
@@ -1125,15 +1236,15 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "white",
     borderRadius: 8,
-    padding: 10,
-    marginTop: 15,
+    padding: 8,
+    marginTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
   leyendaComparativa: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 15,
+    marginBottom: 8, // Reducido
     gap: 20,
   },
   itemLeyenda: {
@@ -1144,7 +1255,6 @@ const styles = StyleSheet.create({
   cuadradoLeyenda: {
     width: 12,
     height: 12,
-    borderRadius: 3,
   },
   textoLeyenda: {
     fontSize: 12,
@@ -1153,81 +1263,80 @@ const styles = StyleSheet.create({
   },
   contenidoComparativa: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "flex-end",
-    height: 150, // REDUCIDO para mejor distribución
-    marginBottom: 10,
-    minHeight: 130,
-    paddingHorizontal: 5,
+    height: 140, // Reducido
+    marginBottom: 2, // Reducido
+    paddingHorizontal: 0,
   },
   grupoBarrasComparativas: {
     flex: 1,
     alignItems: "center",
-    marginHorizontal: 2,
+    marginHorizontal: 1,
     minWidth: 55,
-    justifyContent: 'space-between',
-    height: 140,
+    height: 135, // Reducido
   },
   barrasContainer: {
     alignItems: "center",
-    height: 90, // REDUCIDO
     width: '100%',
-    marginBottom: 5,
-    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   barraIngresoComparativa: {
-    width: 22, // LIGERAMENTE MÁS ANCHA
     backgroundColor: "#00B894",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 3,
+    minHeight: 8,
   },
   barraGastoComparativa: {
-    width: 22, // LIGERAMENTE MÁS ANCHA
     backgroundColor: "#FF6B6B",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 3,
+    minHeight: 8,
+  },
+  separadorBarras: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#f8f8f8',
   },
   valorBarraSuperior: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
     color: "#333",
     textAlign: 'center',
-    marginBottom: 2,
-    height: 16,
+    marginBottom: 1,
+    height: 14,
   },
   valorBarraInferior: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
     color: "#333",
     textAlign: 'center',
+    marginTop: 1,
+    height: 14,
+  },
+  infoCategoriaContainerComparativa: {
+    alignItems: "center",
     marginTop: 2,
-    height: 16,
+    minHeight: 30,
+    width: '100%',
   },
   labelCategoriaComparativa: {
-    fontSize: 10,
+    fontSize: 9,
     color: "#333",
     textAlign: "center",
     fontWeight: '500',
     maxWidth: 55,
-    minHeight: 20,
-    marginTop: 2,
+    marginBottom: 1,
   },
   totalesCategoriaComparativa: {
     alignItems: "center",
-    minHeight: 25,
-    marginTop: 2,
+    minHeight: 20,
   },
   totalIngresoComparativa: {
-    fontSize: 9,
+    fontSize: 8,
     color: "#00B894",
     fontWeight: "600",
     textAlign: 'center',
     marginBottom: 1,
   },
   totalGastoComparativa: {
-    fontSize: 9,
+    fontSize: 8,
     color: "#FF6B6B",
     fontWeight: "600",
     textAlign: 'center',
@@ -1238,64 +1347,59 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     backgroundColor: "white",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 15,
+    padding: 10,
+    marginTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
   contenidoMensual: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     alignItems: "flex-end",
-    height: 150, // REDUCIDO
-    marginBottom: 10,
-    minHeight: 130,
-    paddingHorizontal: 5,
+    height: 140, // Reducido
+    marginBottom: 2, // Reducido
+    paddingHorizontal: 0,
   },
   grupoMes: {
     flex: 1,
     alignItems: "center",
-    marginHorizontal: 2,
+    marginHorizontal: 1,
     minWidth: 55,
-    justifyContent: 'space-between',
-    height: 140,
+    height: 135, // Reducido
   },
   barrasMensualesContainer: {
     alignItems: "center",
-    height: 90, // REDUCIDO
     width: '100%',
-    marginBottom: 5,
-    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   barraIngresoMensual: {
-    width: 22, // LIGERAMENTE MÁS ANCHA
     backgroundColor: "#00B894",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 3,
+    minHeight: 8,
   },
   barraGastoMensual: {
-    width: 22, // LIGERAMENTE MÁS ANCHA
     backgroundColor: "#FF6B6B",
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    minHeight: 3,
+    minHeight: 8,
+  },
+  separadorBarrasMensual: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#f8f8f8',
   },
   valorBarraSuperiorMensual: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
     color: "#333",
     textAlign: 'center',
-    marginBottom: 2,
-    height: 16,
+    marginBottom: 1,
+    height: 14,
   },
   valorBarraInferiorMensual: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "600",
     color: "#333",
     textAlign: 'center',
-    marginTop: 2,
-    height: 16,
+    marginTop: 1,
+    height: 14,
   },
   infoMesContainer: {
     alignItems: "center",
@@ -1303,36 +1407,36 @@ const styles = StyleSheet.create({
     minHeight: 25,
   },
   labelMes: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "bold",
     color: "#31356E",
     textAlign: 'center',
   },
   anioMes: {
-    fontSize: 8,
+    fontSize: 7,
     color: "#666",
     marginTop: 1,
     textAlign: 'center',
   },
   balanceMes: {
     marginTop: 2,
-    paddingHorizontal: 5,
+    paddingHorizontal: 4,
     paddingVertical: 2,
     backgroundColor: "#f0f0f0",
     borderRadius: 3,
-    minWidth: 40,
+    minWidth: 35,
     alignItems: 'center',
   },
   textoBalance: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: "bold",
     textAlign: 'center',
   },
   resumenMensual: {
     backgroundColor: "white",
     borderRadius: 8,
-    padding: 12,
-    marginTop: 15,
+    padding: 10,
+    marginTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
@@ -1340,29 +1444,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 4,
+    marginVertical: 3,
   },
   resumenMensualLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#666",
   },
   resumenMensualValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: "#31356E",
   },
   resumenItem: {
     alignItems: "center",
-    minWidth: 90,
+    minWidth: 80,
   },
   resumenLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: "#666",
-    marginBottom: 3,
+    marginBottom: 2,
     textAlign: "center",
   },
   resumenValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
     textAlign: 'center',
   },
