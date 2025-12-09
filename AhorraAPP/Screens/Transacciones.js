@@ -8,7 +8,7 @@ import { TransaccionController } from "../controllers/TransaccionController";
 import { UsuarioController } from "../controllers/UsuarioController";
 
 export default function Transacciones({ onNext, onEdit, navigation }) {
-  // --- ESTADOS DE FILTRO ---
+  
   const [filtroFecha, setFiltroFecha] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   
@@ -49,13 +49,13 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
     );
   };
 
-  // --- LÓGICA DE FILTRADO Y LIMPIEZA DE DATOS ---
+  
   
   const uniqueCategories = [
     ...new Set(
         listaTransacciones
         .map((item) => item.categoria)
-        .filter(c => c !== null && c !== undefined && c !== "") // Filtro anti-null
+        .filter(c => c !== null && c !== undefined && c !== "") 
     )
   ];
 
@@ -63,22 +63,30 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
     ...new Set(
         listaTransacciones
         .map((item) => item.fecha)
-        .filter(f => f !== null && f !== undefined && f !== "") // Filtro anti-null
+        .filter(f => f !== null && f !== undefined && f !== "") 
     )
   ];
 
-  // 2. Función de filtrado real
+  
   const obtenerDatosFiltrados = () => {
     return listaTransacciones.filter(item => {
-      const coincideFecha = filtroFecha ? item.fecha === filtroFecha : true;
-      const coincideCategoria = filtroCategoria ? item.categoria === filtroCategoria : true;
-      return coincideFecha && coincideCategoria;
+      
+      if (filtroCategoria) {
+        return item.categoria === filtroCategoria;
+      }
+
+      if (filtroFecha) {
+        return item.fecha === filtroFecha;
+      }
+
+      
+      return true;
     });
   };
 
   const datosVisibles = obtenerDatosFiltrados();
 
-  // 3. Limpiar filtros
+  
   const limpiarFiltros = () => {
     setFiltroFecha("");
     setFiltroCategoria("");
@@ -165,9 +173,9 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
 
       <View style={styles.bodyContainer}>
         
-        {/* --- SECCIÓN DE FILTROS --- */}
+        {}
         <View style={styles.filtersWrapper}>
-            {/* Cabecera del filtro con botón de limpiar */}
+            {}
             <View style={styles.filterHeader}>
                 <Text style={styles.filterSectionTitle}>Filtrar por:</Text>
                 
@@ -179,7 +187,7 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
             </View>
 
             <View style={styles.filtersRow}>
-                {/* Filtro Fecha */}
+                {}
                 <View style={styles.smallPickerContainer}>
                     <Picker
                         selectedValue={filtroFecha}
@@ -194,7 +202,7 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
                     </Picker>
                 </View>
 
-                {/* Filtro Categoría */}
+                {}
                 <View style={styles.smallPickerContainer}>
                     <Picker
                         selectedValue={filtroCategoria}
@@ -214,7 +222,7 @@ export default function Transacciones({ onNext, onEdit, navigation }) {
                 Mostrando {datosVisibles.length} resultado(s)
             </Text>
         </View>
-        {/* --------------------------- */}
+        {}
 
         <ScrollView
           style={styles.scrollView}
@@ -284,7 +292,7 @@ const styles = StyleSheet.create({
     marginTop: 10
   },
   
-  // --- ESTILOS FILTROS ---
+ 
   filtersWrapper: {
     width: "100%",
     marginTop: 5,
@@ -347,7 +355,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 5,
   },
-  // ----------------------
+  
 
   scrollView: {
     width: "100%"

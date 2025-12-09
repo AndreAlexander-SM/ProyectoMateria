@@ -11,6 +11,9 @@ export default function Agregar({ onBack, onSave }) {
   const [monto, setMonto] = useState("");
   const [categoria, setCategoria] = useState("");
   
+  
+  const [categoriaSecundaria, setCategoriaSecundaria] = useState(""); 
+
   const [fecha, setFecha] = useState(""); 
   const [date, setDate] = useState(new Date()); 
   const [showDatePicker, setShowDatePicker] = useState(false); 
@@ -66,35 +69,39 @@ export default function Agregar({ onBack, onSave }) {
   const cambiarTipo = (nuevoTipo) => {
     setTipo(nuevoTipo);
     setCategoria(""); 
+    setCategoriaSecundaria(""); 
   };
 
   const handleSave = async () => {
-    if (!monto || !categoria || !fecha) {
-      return Alert.alert("Error", "Campos obligatorios vacíos");
+    
+    if (!monto || !categoria || !fecha || !descripcion.trim()) {
+      return Alert.alert("Campos incompletos", "Por favor llena todos los campos, incluyendo la descripción.");
     }
 
-    // --- NUEVA VALIDACIÓN DE PRESUPUESTO ---
+    
+    if (tipo === "gasto" && !categoriaSecundaria) {
+        return Alert.alert("Campos incompletos", "Debes seleccionar una Categoría General para el gasto.");
+    }
+
+    
     if (tipo === "gasto") {
-      // 1. Buscamos el apartado seleccionado en la lista cargada
       const apartadoSeleccionado = listaApartados.find(item => item.nombre === categoria);
       
       if (apartadoSeleccionado) {
-        // 2. Limpiamos los valores de símbolos ($) y comas (,) para compararlos como números
         const montoDisponible = parseFloat(apartadoSeleccionado.monto.toString().replace("$", "").replace(",", ""));
         const montoEgreso = parseFloat(monto);
 
-        // 3. Comparamos
         if (montoEgreso > montoDisponible) {
           Alert.alert(
-            "Fondos Insuficientes", // Título de la alerta
+            "Fondos Insuficientes", 
             `No puedes gastar $${montoEgreso} porque tu apartado "${categoria}" solo tiene $${montoDisponible} disponibles.\n\nPor favor corrige la cantidad.`,
             [{ text: "Entendido" }]
           );
-          return; // <--- IMPORTANTE: Esto detiene la función aquí y NO guarda nada.
+          return; 
         }
       }
     }
-    // ---------------------------------------
+    
 
     const usuario = await userCtrl.getUsuarioActivo();
 
@@ -105,14 +112,13 @@ export default function Agregar({ onBack, onSave }) {
     const resultado = await transCtrl.agregar(
       usuario.id,
       monto,
-      categoria,
+      categoria, 
       fecha,
       descripcion,
       tipo
     );
 
     if (resultado.success) {
-      // Mantenemos tu lógica de alertas post-guardado por si acaso (para control de límites mensuales acumulados)
       if (resultado.alerta) {
         Alert.alert(
           "⚠️ LÍMITE EXCEDIDO",
@@ -208,6 +214,7 @@ export default function Agregar({ onBack, onSave }) {
           onChangeText={setMonto}
         />
 
+        {}
         <View style={styles.pickerContainer}>
             <Picker
                 selectedValue={categoria}
@@ -216,7 +223,7 @@ export default function Agregar({ onBack, onSave }) {
                 mode="dropdown"
             >
                 <Picker.Item 
-                  label={tipo === "gasto" ? "Selecciona Apartado" : "Selecciona Categoría"} 
+                  label={tipo === "gasto" ? "Selecciona Apartado (Presupuesto)" : "Selecciona Categoría"} 
                   value="" 
                   color="#999" 
                   enabled={false} 
@@ -237,6 +244,25 @@ export default function Agregar({ onBack, onSave }) {
                 )}
             </Picker>
         </View>
+
+        {}
+        {tipo === "gasto" && (
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={categoriaSecundaria}
+                    onValueChange={(itemValue) => setCategoriaSecundaria(itemValue)}
+                    style={styles.picker}
+                    mode="dropdown"
+                >
+                    {}
+                    <Picker.Item label="Categoría General" value="" color="#999" enabled={false} />
+                    {categoriasFijas.map((cat, index) => (
+                        <Picker.Item key={index} label={cat} value={cat} color="black" />
+                    ))}
+                </Picker>
+            </View>
+        )}
+        {}
 
         <TouchableOpacity onPress={mostrarCalendario} style={styles.dateInputContainer}>
             <Text style={fecha ? styles.dateText : styles.placeholderText}>

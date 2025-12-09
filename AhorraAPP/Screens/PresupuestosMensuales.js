@@ -72,7 +72,7 @@ export default function PresupuestosMensuales({ navigation }) {
 
     const usuario = await userCtrl.getUsuarioActivo();
     if (usuario) {
-      // --- INICIO DE VALIDACIÓN DE DINERO DISPONIBLE ---
+  
       
       const balanceTrans = await transCtrl.obtenerBalance(usuario.id);
       const totalAhorrado = await apartadoCtrl.obtenerTotalAhorrado(usuario.id);

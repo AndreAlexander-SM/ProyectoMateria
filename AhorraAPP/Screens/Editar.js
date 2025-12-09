@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { Picker } from "@react-native-picker/picker"; 
 
 export default function Editar({ onBack, onNext, onUpdate, item }) {
   const [monto, setMonto] = useState("");
@@ -7,6 +8,9 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
   const [fecha, setFecha] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState("gasto");
+
+  
+  const categoriasFijas = ["Hogar", "Familia", "Despensa", "Personal", "Salud", "Transporte", "Ocio", "Nomina", "Extra"];
 
   useEffect(() => {
     if (item) {
@@ -61,12 +65,21 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
           onChangeText={setMonto}
         />
 
-        <TextInput
-          placeholder="Categoría"
-          style={styles.input}
-          value={categoria}
-          onChangeText={setCategoria}
-        />
+        {}
+        <View style={styles.pickerContainer}>
+            <Picker
+                selectedValue={categoria}
+                onValueChange={(itemValue) => setCategoria(itemValue)}
+                style={styles.picker}
+                mode="dropdown"
+            >
+                <Picker.Item label="Selecciona Categoría" value="" color="#999" />
+                {categoriasFijas.map((cat, index) => (
+                    <Picker.Item key={index} label={cat} value={cat} color="black" />
+                ))}
+            </Picker>
+        </View>
+        {}
 
         <TextInput
           placeholder="Fecha"
@@ -158,6 +171,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: "100%",
   },
+
+ 
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    marginBottom: 10,
+    width: "100%",
+    justifyContent: "center",
+    height: 50, 
+    overflow: 'hidden',
+  },
+  picker: {
+    width: "100%",
+    height: "100%",
+  },
+  
 
   textArea: {
     height: 100,
