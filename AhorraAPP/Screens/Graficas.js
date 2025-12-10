@@ -31,7 +31,7 @@ export default function Graficas({ navigation }) {
   const transCtrl = new TransaccionController();
   const userCtrl = new UsuarioController();
 
-  // --- AYUDANTES ---
+  
   const obtenerNombreMes = (fechaISO) => {
     if (!fechaISO) return "Sin fecha";
     const partes = fechaISO.split("-");
@@ -44,8 +44,7 @@ export default function Graficas({ navigation }) {
     ];
     const mesIndex = parseInt(month, 10) - 1;
     if (mesIndex < 0 || mesIndex > 11) return fechaISO;
-    
-    // CORRECCIÓN 1: Se agregaron las comillas invertidas (backticks)
+  
     return `${meses[mesIndex].substring(0, 3)} ${year}`;
   };
 
@@ -74,7 +73,6 @@ export default function Graficas({ navigation }) {
         
         const mesFormateado = month.padStart(2, '0');
         
-        // CORRECCIÓN 2: Se agregaron backticks
         const mesKey = `${year}-${mesFormateado}`;
         
         if (!transaccionesPorMes[mesKey]) {
@@ -91,8 +89,8 @@ export default function Graficas({ navigation }) {
     
     return Object.entries(transaccionesPorMes)
       .map(([mes, datos]) => ({ mes, ...datos }))
-      .sort((a, b) => a.mes.localeCompare(b.mes)) // Orden cronológico
-      .slice(-6); // Últimos 6 meses
+      .sort((a, b) => a.mes.localeCompare(b.mes)) 
+      .slice(-6); 
   };
 
   useFocusEffect(
@@ -145,7 +143,7 @@ export default function Graficas({ navigation }) {
 
   const getMensajeBalance = () => {
     const { balance } = datos;
-    // CORRECCIÓN 3: Se agregaron backticks a los mensajes de retorno
+   
     if (balance > 0) return `¡Excelente! Tienes un superávit de $${balance.toFixed(2)}.`;
     if (balance < 0) return `Cuidado, gastas más de lo que ingresas por $${Math.abs(balance).toFixed(2)}.`;
     return "Tus finanzas están perfectamente equilibradas.";
@@ -158,7 +156,7 @@ export default function Graficas({ navigation }) {
     return Math.max(5, Math.min(altura, alturaMaxima));
   };
 
-  // --- 1. GRÁFICA PASTEL ---
+  
   const renderGraficaPastelSimple = () => {
     const categoriasIngresos = Object.entries(datos.ingresosPorCategoria).map(([k, v]) => ({
       categoria: k, monto: v, tipo: "ingreso", porcentaje: (v / datos.totalIngresos) * 100
@@ -197,7 +195,7 @@ export default function Graficas({ navigation }) {
             </View>
           </View>
 
-          {/* Leyenda */}
+          {}
           <View style={styles.leyendaContainer}>
             {todasCategorias.map((item, index) => (
               <View key={index} style={styles.filaLeyenda}>
@@ -218,7 +216,7 @@ export default function Graficas({ navigation }) {
     );
   };
 
-  // --- 2. GRÁFICA BARRAS ---
+ 
   const renderGraficaBarras = () => {
     const catIng = Object.entries(datos.ingresosPorCategoria).map(([k, v]) => ({ categoria: k, monto: v, tipo: "ingreso" }));
     const catGas = Object.entries(datos.gastosPorCategoria).map(([k, v]) => ({ categoria: k, monto: v, tipo: "gasto" }));
@@ -238,7 +236,7 @@ export default function Graficas({ navigation }) {
             const altura = calcularAlturaBarra(item.monto, maxMonto);
             return (
               <View key={index} style={styles.columnaBarra}>
-                {/* CORRECCIÓN 4: Se arregló el template literal dentro del JSX para mostrar 'k' */}
+                {}
                 <Text style={styles.valorBarra}>
                     ${item.monto > 999 ? `${(item.monto/1000).toFixed(1)}k` : item.monto.toFixed(0)}
                 </Text>
@@ -263,7 +261,7 @@ export default function Graficas({ navigation }) {
     );
   };
 
-  // --- 3. COMPARATIVA (Ingresos vs Egresos) ---
+  
   const renderGraficaIngresosVsEgresos = () => {
     const { gastosPorCategoria, ingresosPorCategoria } = datos;
     const todasCats = new Set([...Object.keys(gastosPorCategoria), ...Object.keys(ingresosPorCategoria)]);
@@ -309,7 +307,7 @@ export default function Graficas({ navigation }) {
     );
   };
 
-  // --- 4. MENSUAL ---
+ 
   const renderGraficaComparativaMensual = () => {
     const { transaccionesMensuales } = datos;
     if (transaccionesMensuales.length === 0) return <View style={styles.card}><Text style={styles.sinDatos}>Sin historial mensual</Text></View>;
@@ -343,7 +341,7 @@ export default function Graficas({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#46607C" />
       
-      {/* Header */}
+      {}
       <View style={styles.header}>
         <TouchableOpacity style={styles.btnBack} onPress={() => navigation.goBack()}>
           <Image source={require("../assets/regresar.png")} style={styles.iconBack} />
@@ -352,7 +350,7 @@ export default function Graficas({ navigation }) {
         <View style={{width: 30}} />
       </View>
 
-      {/* Tabs */}
+      {}
       <View style={styles.tabsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal: 15}}>
           {[
@@ -374,13 +372,13 @@ export default function Graficas({ navigation }) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Renderizado Condicional */}
+        {}
         {graficaActiva === 'pastel' && renderGraficaPastelSimple()}
         {graficaActiva === 'barras' && renderGraficaBarras()}
         {graficaActiva === 'ingresosVsEgresos' && renderGraficaIngresosVsEgresos()}
         {graficaActiva === 'comparativaMensual' && renderGraficaComparativaMensual()}
 
-        {/* Resumen Final (Siempre visible) */}
+        {}
         <View style={styles.card}>
           <Text style={styles.tituloGrafica}>Resumen Total</Text>
           <View style={styles.filaResumen}>
@@ -455,13 +453,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // --- ESTILOS DE TARJETA (CARD) ---
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    // Sombras suaves
+   
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -478,7 +476,7 @@ const styles = StyleSheet.create({
   cargando: { textAlign: 'center', marginVertical: 20, color: '#888' },
   sinDatos: { textAlign: 'center', marginVertical: 20, color: '#AAA', fontStyle: 'italic' },
 
-  // --- PASTEL ---
+  
   contenidoPastel: { alignItems: 'center' },
   circuloAnillos: {
     width: 200,
@@ -489,7 +487,7 @@ const styles = StyleSheet.create({
   },
   anilloPastel: {
     position: 'absolute',
-    borderWidth: 10, // Anillos más visibles
+    borderWidth: 10,
   },
   centroPastelSimple: {
     position: 'absolute',
@@ -514,12 +512,12 @@ const styles = StyleSheet.create({
   nombreCategoria: { fontSize: 14, color: '#333', fontWeight: '500' },
   montoLeyenda: { fontSize: 14, fontWeight: '600' },
 
-  // --- BARRAS ---
+ 
   contenedorBarras: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'flex-end',
-    height: 180, // Altura fija suficiente
+    height: 180, 
     paddingBottom: 10,
   },
   columnaBarra: {
@@ -529,7 +527,7 @@ const styles = StyleSheet.create({
   },
   valorBarra: { fontSize: 10, color: '#666', marginBottom: 4 },
   barra: {
-    width: 20, // Ancho fijo
+    width: 20,
     borderRadius: 4,
     minHeight: 4,
   },
@@ -538,7 +536,7 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 6,
     textAlign: 'center',
-    width: 50, // Limitar ancho texto
+    width: 50, 
   },
   
   resumenBarras: {
@@ -551,7 +549,7 @@ const styles = StyleSheet.create({
   dot: { width: 10, height: 10, borderRadius: 5, marginRight: 5 },
   txtResumen: { fontSize: 12, color: '#555' },
 
-  // --- COMPARATIVAS ---
+
   contenedorComparativa: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -578,7 +576,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
 
-  // --- RESUMEN FINAL ---
+ 
   filaResumen: {
     flexDirection: 'row',
     justifyContent: 'space-between',

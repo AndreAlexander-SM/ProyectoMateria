@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker"; 
+import { UsuarioController } from "../controllers/UsuarioController";
+import { PresupuestoController } from "../controllers/PresupuestoController";
 
 export default function Editar({ onBack, onNext, onUpdate, item }) {
   const [monto, setMonto] = useState("");
@@ -9,8 +11,23 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
   const [descripcion, setDescripcion] = useState("");
   const [tipo, setTipo] = useState("gasto");
 
+  const [listaApartados, setListaApartados] = useState([]);
+
+  const userCtrl = new UsuarioController();
+  const presCtrl = new PresupuestoController();
   
   const categoriasFijas = ["Hogar", "Familia", "Despensa", "Personal", "Salud", "Transporte", "Ocio", "Nomina", "Extra"];
+
+  useEffect(() => {
+    const cargarApartados = async () => {
+      const usuario = await userCtrl.getUsuarioActivo();
+      if (usuario) {
+        const apartados = await presCtrl.obtenerTodos(usuario.id);
+        setListaApartados(apartados);
+      }
+    };
+    cargarApartados();
+  }, []);
 
   useEffect(() => {
     if (item) {
@@ -21,6 +38,33 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
       setTipo(item.tipo);
     }
   }, [item]);
+
+  const handleUpdate = () => {
+    if (tipo === "gasto") {
+      const apartadoSeleccionado = listaApartados.find(a => a.nombre === categoria);
+      
+      if (apartadoSeleccionado) {
+        let montoDisponible = parseFloat(apartadoSeleccionado.monto.toString().replace("$", "").replace(",", ""));
+        
+        if (item && item.categoria === categoria && item.tipo === "gasto") {
+             montoDisponible += parseFloat(item.monto);
+        }
+
+        const montoEgreso = parseFloat(monto);
+
+        if (montoEgreso > montoDisponible) {
+          Alert.alert(
+            "Fondos Insuficientes", 
+            `Esta edición excede el presupuesto. Tu apartado "${categoria}" tendría un balance negativo.\n\nDisponible real: $${montoDisponible.toFixed(2)}`,
+            [{ text: "Entendido" }]
+          );
+          return; 
+        }
+      }
+    }
+    
+    onUpdate(monto, categoria, fecha, descripcion, tipo);
+  };
 
   return (
     <View style={styles.container}>
@@ -65,7 +109,7 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
           onChangeText={setMonto}
         />
 
-        {}
+        {/* Picker de Categorías */}
         <View style={styles.pickerContainer}>
             <Picker
                 selectedValue={categoria}
@@ -79,7 +123,6 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
                 ))}
             </Picker>
         </View>
-        {}
 
         <TextInput
           placeholder="Fecha"
@@ -99,9 +142,7 @@ export default function Editar({ onBack, onNext, onUpdate, item }) {
         <View style={styles.row}>
           <TouchableOpacity
             style={[styles.boton, styles.cancel]}
-            onPress={() =>
-              onUpdate(monto, categoria, fecha, descripcion, tipo)
-            }
+            onPress={handleUpdate} 
           >
             <Text style={styles.textoBoton}>Actualizar</Text>
           </TouchableOpacity>
@@ -172,7 +213,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
- 
   pickerContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -187,7 +227,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  
 
   textArea: {
     height: 100,
